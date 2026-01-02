@@ -1,0 +1,19 @@
+# Carpetas locales personales / pruebas
+previo/
+
+# Node.js general (aplica a todo el repo)
+node_modules/
+.env
+.env.local
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+
+# Builds / outputs
+dist/
+.next/
+out/
+
+# OS files
+.DS_Store
+Thumbs.db
