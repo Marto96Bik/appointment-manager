@@ -25,13 +25,14 @@ Intiuitive design for users with limited technical knowledge.
 - **Calendar**: Google Calendar API
 
 ## Project Structure
-
-agenda-pro/
-├── backend/ # NestJS API
-├── frontend/ # Next.js app
-└── docs/
-└── specs.md # Project specifications (link below)
-
+```
+appointment-manager/
+├── backend/              # NestJS API
+├── frontend/             # Next.js app
+├── docs/
+│   └── specs.md          # Detailed project specifications
+└── README.md             # This file
+```
 ## Documentation
 
 Detailed specs and scope: [docs/specs.md](./docs/specs.md)
