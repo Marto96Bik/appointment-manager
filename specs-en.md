@@ -28,7 +28,7 @@ Responsive web app for simple patient appointment management with Google Calenda
 - Automatic patient WhatsApp notification on create/edit/delete/24h reminder
 - Side menu: Profile / Calendar / Patients / Logout / Delete account
 
-**Not included (MVP):**
+**Not included:**
 
 - Manual signup (without google account)
 - Patient self-booking portal
