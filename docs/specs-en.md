@@ -15,7 +15,13 @@ Responsive web app for simple patient appointment management with Google Calenda
 - Scheduling/edit/delete appointments via google calendar
 - WhatsApp notification to patients.
 
-**Tech Stack:** NestJS + Prisma + Postgres, Twilio API for WhatsApp, Google Calendar API and Next.js (frontend).
+**Tech Stack:**
+
+- **Frontend**: Next.js + Tailwind + FullCalendar
+- **Backend**: Next.js + PostgreSQL
+- **Auth**: Google OAuth
+- **Notifications**: Twilio WhatsApp API
+- **Calendar**: Google Calendar API
 
 ## MVP Scope
 

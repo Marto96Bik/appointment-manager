@@ -16,23 +16,33 @@ Intiuitive design for users with limited technical knowledge.
 - Google Calendar sync
 - WhatsApp notifications: confirmation, updates, cancellation, 24h reminder
 
+## Diagrams
+
+### Process
+
+![Process Flow](/docs/process.svg)
+
+### ERD
+
+![ERD](/docs/ERD.svg)
+
 ## Tech Stack
 
-- **Frontend**: Next.js + Tailwind + FullCalendar
-- **Backend**: NestJS + Prisma + PostgreSQL/Docker
+- **Backend & Frontend**: Next.js + PostgreSQL + Tailwind + FullCalendar
 - **Auth**: Google OAuth
 - **Notifications**: Twilio WhatsApp API
 - **Calendar**: Google Calendar API
 
 ## Project Structure
+
 ```
 appointment-manager/
-├── backend/              # NestJS API
-├── frontend/             # Next.js app
+├── app/                  # Next.js v16.1.1
 ├── docs/
-│   └── specs.md          # Detailed project specifications
+│   └── specs-en.md       # Detailed project specifications
 └── README.md             # This file
 ```
+
 ## Documentation
 
 Detailed specs and scope: [docs/specs.md](./docs/specs.md)
