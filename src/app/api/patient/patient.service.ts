@@ -1,7 +1,5 @@
 import { CreatePatientDto } from "./patient.dto";
 import { inMemoryStore } from "../../../lib/inMemoryStore";
-import { error } from "console";
-import { logger } from "@/lib/logger";
 
 export function createPatient(data: CreatePatientDto) {
   patientExists(data.documentId);
