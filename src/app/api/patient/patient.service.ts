@@ -1,24 +1,20 @@
-const globalAny: any = globalThis as any;
+import { CreatePatientDto } from "./patient.dto";
+import { inMemoryStore } from "../../../lib/inMemoryStore";
 
-globalAny.patients = globalAny.patients || [];
-
-export const patients: any[] = globalAny.patients;
-
-export function createPatient(data: { firstName: string; lastName: string; email: string }) {
+export function createPatient(data: CreatePatientDto) {
   const newPatient = {
-    id: patients.length + 1, // simple autoincrement
+    id: inMemoryStore.patients.length + 1,
     ...data,
   };
-  patients.push(newPatient);
+  inMemoryStore.patients.push(newPatient);
   return newPatient;
 }
 
-// opcional: obtener todos los pacientes
 export function getAllPatients() {
-  return patients;
+  return inMemoryStore.patients;
 }
 
 export function getPatientById(id: number) {
-  const patient = patients.find((patient) => patient.id === id);
+  const patient = inMemoryStore.patients.find((patient) => patient.id === id);
   return patient;
 }
