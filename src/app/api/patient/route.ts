@@ -11,8 +11,13 @@ export async function POST(req: Request) {
     const patient = createPatient(data);
     return NextResponse.json(patient, { status: 201 });
   } catch (e) {
-    logger.error({ e }, "An error occurred during operation");
-    return NextResponse.json({ error: "Invalid data" }, { status: 400 });
+    logger.error("An error occurred during operation");
+
+    if (e instanceof Error) {
+      return NextResponse.json({ error: e.message }, { status: 400 });
+    }
+    logger.error({ e }, "Unknown error type");
+    return NextResponse.json({ error: "Unknown error" }, { status: 500 });
   }
 }
 

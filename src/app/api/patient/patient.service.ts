@@ -1,7 +1,10 @@
 import { CreatePatientDto } from "./patient.dto";
 import { inMemoryStore } from "../../../lib/inMemoryStore";
+import { error } from "console";
+import { logger } from "@/lib/logger";
 
 export function createPatient(data: CreatePatientDto) {
+  patientExists(data.documentId);
   const newPatient = {
     id: inMemoryStore.patients.length + 1,
     ...data,
@@ -17,4 +20,10 @@ export function getAllPatients() {
 export function getPatientById(id: number) {
   const patient = inMemoryStore.patients.find((patient) => patient.id === id);
   return patient;
+}
+
+function patientExists(documentId: string) {
+  if (inMemoryStore.patients.some((patient) => patient.documentId === documentId)) {
+    throw new Error("Patient with this data already exists");
+  }
 }
