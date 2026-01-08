@@ -3,7 +3,6 @@ import { getPatientById } from "../patient.service";
 import { logger } from "../../../../lib/logger";
 
 export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
-  logger.info("Handling patient GET request");
   const { id } = await context.params;
   const numericId = parseInt(id, 10);
 

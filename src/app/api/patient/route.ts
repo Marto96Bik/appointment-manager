@@ -4,25 +4,21 @@ import { createPatientSchema } from "./patient.dto";
 import { logger } from "../../../lib/logger";
 
 export async function POST(req: Request) {
-  logger.info("Handling patient POST request");
   const data = await req.json();
   try {
     createPatientSchema.parse(data); // Validation of input data
     const patient = createPatient(data);
     return NextResponse.json(patient, { status: 201 });
   } catch (e) {
-    logger.error("An error occurred during operation");
-
+    logger.error(e);
     if (e instanceof Error) {
-      return NextResponse.json({ error: e.message }, { status: 400 });
+      return NextResponse.json(e, { status: 400 });
     }
-    logger.error({ e }, "Unknown error type");
-    return NextResponse.json({ error: "Unknown error" }, { status: 500 });
+    return NextResponse.json(e, { status: 500 }); // TODO fix
   }
 }
 
 export async function GET() {
-  logger.info("Handling patient GET request");
   const patients = getAllPatients();
   return NextResponse.json(patients);
 }
