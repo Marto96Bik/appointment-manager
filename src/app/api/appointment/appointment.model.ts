@@ -1,7 +1,7 @@
 export interface Appointment {
   id: number;
-  start: Date;
-  end: Date;
+  start: string;
+  end: string;
   eventId: string;
   patientId: number;
 }
