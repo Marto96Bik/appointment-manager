@@ -1,5 +1,4 @@
 import { google } from "googleapis";
-require("dotenv").config();
 
 export class GoogleCalendarClient {
   private calendar;
@@ -9,7 +8,7 @@ export class GoogleCalendarClient {
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
-      "urn:ietf:wg:oauth:2.0:oob"
+      process.env.GOOGLE_REDIRECT_URI
     );
 
     oauth2Client.setCredentials({
@@ -21,7 +20,7 @@ export class GoogleCalendarClient {
 
   async listEvents(fromDate: Date, maxResults?: number) {
     const res = await this.calendar.events.list({
-      calendarId: "primary",
+      calendarId: "primary", // Calendar identifier.
       timeMin: fromDate.toISOString(),
       maxResults: maxResults,
       singleEvents: true,

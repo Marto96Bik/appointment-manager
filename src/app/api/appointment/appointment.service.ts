@@ -1,5 +1,8 @@
 import { CreateAppointmentDto } from "./appointent.dto";
 import { inMemoryStore } from "../../../lib/inMemoryStore";
+import { GoogleCalendarClient } from "../../../integrations/google-calendar.client";
+
+const calendarClient = new GoogleCalendarClient();
 
 export function createAppointment(data: CreateAppointmentDto) {
   const newAppointment = {
@@ -13,8 +16,8 @@ export function createAppointment(data: CreateAppointmentDto) {
   return newAppointment;
 }
 
-export function getAllAppointments() {
-  return inMemoryStore.appointments;
+export async function getAllAppointments() {
+  return await calendarClient.listEvents(new Date(), 10);
 }
 
 export function getAppointmentById(id: number) {

@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-, "src/integrations/google-calendar.client.ts"  ],
+, "src/integrations/google-calendar.client.ts", "get-token.js", "previo/prueba-api-calendar/std-response.js"  ],
   "exclude": ["node_modules"]
 }

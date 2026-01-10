@@ -15,6 +15,6 @@ export async function POST(req: Request) {
 }
 
 export async function GET() {
-  const appointments = getAllAppointments();
+  const appointments = await getAllAppointments();
   return Response.json(appointments);
 }
