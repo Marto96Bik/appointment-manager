@@ -30,5 +30,24 @@ export class GoogleCalendarClient {
     return res.data.items ?? [];
   }
 
-  async createEvent(data: { title: string; date: string }) {}
+  async createEvent(data: { name: string; start: string; end: string }) {
+    const res = await this.calendar.events.insert({
+      // Calendar identifier. To retrieve calendar IDs call the calendarList.list method. If you want to access the primary calendar of the currently logged in user, use the "primary" keyword.
+      calendarId: "primary",
+      sendUpdates: "all", // Notificate the creation of the new event. Default false.
+      requestBody: {
+        summary: data.name,
+        start: {
+          dateTime: data.start,
+          timeZone: "Asia/Jerusalem",
+        },
+        end: {
+          dateTime: data.end,
+          timeZone: "Asia/Jerusalem",
+        },
+      },
+    });
+    console.log(res.data);
+    return await res.data;
+  }
 }

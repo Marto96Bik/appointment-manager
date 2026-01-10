@@ -4,8 +4,13 @@ import { GoogleCalendarClient } from "../../../integrations/google-calendar.clie
 
 const calendarClient = new GoogleCalendarClient();
 
-export function createAppointment(data: CreateAppointmentDto) {
-  const newAppointment = {
+export async function createAppointment(data: CreateAppointmentDto) {
+  return await calendarClient.createEvent({
+    name: "Nuevo appointment",
+    start: data.start,
+    end: data.end,
+  });
+  /*const newAppointment = {
     id: inMemoryStore.appointments.length + 1,
     start: data.start,
     end: data.end,
@@ -13,7 +18,7 @@ export function createAppointment(data: CreateAppointmentDto) {
     patientId: data.patientId,
   };
   inMemoryStore.appointments.push(newAppointment);
-  return newAppointment;
+  return newAppointment;*/
 }
 
 export async function getAllAppointments() {
