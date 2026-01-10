@@ -8,20 +8,21 @@ const calendarClient = new GoogleCalendarClient();
 export async function createAppointment(data: CreateAppointmentDto) {
   const patient = getPatientById(data.patientId);
   const message = `New appointment with ${patient?.name} ${patient?.lastName} `;
-  return await calendarClient.createEvent({
+  await calendarClient.createEvent({
     name: message,
     start: data.start,
     end: data.end,
   });
-  /*const newAppointment = {
+
+  const newAppointment = {
     id: inMemoryStore.appointments.length + 1,
     start: data.start,
     end: data.end,
-    eventId: "API Calendar Event ID",
+    eventId: "API Calendar Event ID", // TODO replace by real eventId
     patientId: data.patientId,
   };
   inMemoryStore.appointments.push(newAppointment);
-  return newAppointment;*/
+  return newAppointment;
 }
 
 export async function getAllAppointments() {
