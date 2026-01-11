@@ -8,17 +8,20 @@ const calendarClient = new GoogleCalendarClient();
 export async function createAppointment(data: CreateAppointmentDto) {
   const patient = getPatientById(data.patientId);
   const message = `New appointment with ${patient?.name} ${patient?.lastName} `;
-  await calendarClient.createEvent({
+  const event = await calendarClient.createEvent({
     name: message,
     start: data.start,
     end: data.end,
   });
 
+  if (!event.id) {
+    throw new Error("Calendar event was created without ID");
+  }
   const newAppointment = {
     id: inMemoryStore.appointments.length + 1,
     start: data.start,
     end: data.end,
-    eventId: "API Calendar Event ID", // TODO replace by real eventId
+    eventId: event.id,
     patientId: data.patientId,
   };
   inMemoryStore.appointments.push(newAppointment);
