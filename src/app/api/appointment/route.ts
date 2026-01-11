@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAppointment, getAllAppointments } from "./appointment.service";
 import { createAppointmentSchema } from "./appointent.dto";
+import { logger } from "@/lib/logger";
 
 export async function POST(req: Request) {
   const data = await req.json();
@@ -9,8 +10,11 @@ export async function POST(req: Request) {
     const appointment = await createAppointment(data);
     return Response.json(appointment, { status: 201 });
   } catch (e) {
-    console.error(e); // TODO cambiar por logger
-    return NextResponse.json({ error: "Invalid data" }, { status: 400 });
+    logger.error(e);
+    if (e instanceof Error) {
+      return NextResponse.json(e, { status: 400 });
+    }
+    return NextResponse.json(e, { status: 500 }); // TODO fix
   }
 }
 
