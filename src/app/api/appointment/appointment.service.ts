@@ -29,7 +29,11 @@ export async function createAppointment(data: CreateAppointmentDto) {
 }
 
 export async function getAllAppointments() {
-  return await calendarClient.listEvents(new Date(), 10);
+  return inMemoryStore.appointments;
+}
+
+export async function getCalendarEvents(dateStart: Date, maxResults: number) {
+  return await calendarClient.listEvents(dateStart, maxResults);
 }
 
 export function getAppointmentById(id: number) {
