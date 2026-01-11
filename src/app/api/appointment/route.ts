@@ -6,7 +6,7 @@ export async function POST(req: Request) {
   const data = await req.json();
   try {
     createAppointmentSchema.parse(data); // Validation of input data
-    const appointment = createAppointment(data);
+    const appointment = await createAppointment(data);
     return Response.json(appointment, { status: 201 });
   } catch (e) {
     console.error(e); // TODO cambiar por logger
