@@ -2,8 +2,10 @@ import { CreateAppointmentDto } from "./appointent.dto";
 import { inMemoryStore } from "../../../lib/inMemoryStore";
 import { GoogleCalendarClient } from "../../../integrations/google-calendar.client";
 import { getPatientById } from "../patient/patient.service";
+import { TwilioClient } from "../../../integrations/twilio.client";
 
 const calendarClient = new GoogleCalendarClient();
+const twilioClient = new TwilioClient();
 
 export async function createAppointment(data: CreateAppointmentDto) {
   const patient = getPatientById(data.patientId);
@@ -28,6 +30,8 @@ export async function createAppointment(data: CreateAppointmentDto) {
     patientId: data.patientId,
   };
   inMemoryStore.appointments.push(newAppointment);
+  await twilioClient.sendMessage(patient.phone);
+  console.log(patient.phone);
   return newAppointment;
 }
 
