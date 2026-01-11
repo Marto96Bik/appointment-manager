@@ -7,6 +7,9 @@ const calendarClient = new GoogleCalendarClient();
 
 export async function createAppointment(data: CreateAppointmentDto) {
   const patient = getPatientById(data.patientId);
+  if (!patient) {
+    throw new Error("Patient not found");
+  }
   const message = `New appointment with ${patient?.name} ${patient?.lastName} `;
   const event = await calendarClient.createEvent({
     name: message,
