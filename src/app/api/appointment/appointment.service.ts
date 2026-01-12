@@ -3,6 +3,7 @@ import { inMemoryStore } from "../../../lib/inMemoryStore";
 import { GoogleCalendarClient } from "../../../integrations/google-calendar.client";
 import { getPatientById } from "../patient/patient.service";
 import { TwilioClient } from "../../../integrations/twilio.client";
+import { buildAppointmentMessage } from "./appointment.notification";
 
 const calendarClient = new GoogleCalendarClient();
 const twilioClient = new TwilioClient();
@@ -30,8 +31,15 @@ export async function createAppointment(data: CreateAppointmentDto) {
     patientId: data.patientId,
   };
   inMemoryStore.appointments.push(newAppointment);
-  await twilioClient.sendMessage(patient.phone);
-  console.log(patient.phone);
+  await twilioClient.sendMessage(
+    process.env.TWILIO_WHATSAPP_FROM!,
+    patient.phone,
+    buildAppointmentMessage({
+      patientName: patient.name,
+      professionalName: "Mama de sabri",
+      date: newAppointment.start,
+    })
+  );
   return newAppointment;
 }
 

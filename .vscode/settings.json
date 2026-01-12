@@ -1,0 +1,7 @@
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "prettier.printWidth": 100,
+  "notebook.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnPaste": false
+}
