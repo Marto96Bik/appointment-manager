@@ -38,7 +38,7 @@ export async function createAppointment(data: CreateAppointmentDto) {
       patientName: patient.name,
       professionalName: "Mama de sabri",
       date: newAppointment.start,
-    })
+    }),
   );
   return newAppointment;
 }
