@@ -47,7 +47,6 @@ export class GoogleCalendarClient {
         },
       },
     });
-    console.log(res.data);
     return await res.data;
   }
 }
