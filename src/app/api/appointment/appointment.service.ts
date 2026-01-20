@@ -4,6 +4,8 @@ import { GoogleCalendarClient } from "../../../integrations/google-calendar.clie
 import { getPatientById } from "../patient/patient.service";
 import { TwilioClient } from "../../../integrations/twilio.client";
 import { buildAppointmentMessage } from "./appointment.notification";
+import { Appointment } from "./appointment.model";
+import { Patient } from "../patient/patient.model";
 
 const calendarClient = new GoogleCalendarClient();
 const twilioClient = new TwilioClient();
@@ -31,15 +33,7 @@ export async function createAppointment(data: CreateAppointmentDto) {
     patientId: data.patientId,
   };
   inMemoryStore.appointments.push(newAppointment);
-  await twilioClient.sendMessage(
-    process.env.TWILIO_WHATSAPP_FROM!,
-    patient.phone,
-    buildAppointmentMessage({
-      patientName: patient.name,
-      professionalName: "Mama de sabri",
-      date: newAppointment.start,
-    }),
-  );
+  await sendNotificationMessage(patient, newAppointment);
   return newAppointment;
 }
 
@@ -53,4 +47,14 @@ export async function getCalendarEvents(dateStart: Date, maxResults: number) {
 
 export function getAppointmentById(id: number) {
   return inMemoryStore.appointments.find((appointent) => appointent.id === id);
+}
+
+export async function sendNotificationMessage(patient: Patient, appointment: Appointment) {
+  const message = buildAppointmentMessage({
+    patientName: patient.name,
+    professionalName: "Mama de sabri",
+    date: appointment.start,
+  });
+
+  await twilioClient.sendMessage(process.env.TWILIO_WHATSAPP_FROM!, patient.phone, message);
 }
