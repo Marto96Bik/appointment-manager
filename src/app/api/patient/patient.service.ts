@@ -1,7 +1,6 @@
 import { CreatePatientDto } from "./patient.dto";
 import { inMemoryStore } from "../../../lib/inMemoryStore";
-import { error } from "console";
-import { logger } from "@/lib/logger";
+import { AppError } from "../core/errors/appCustomError";
 
 export function createPatient(data: CreatePatientDto) {
   patientExists(data.documentId);
@@ -24,6 +23,6 @@ export function getPatientById(id: number) {
 
 function patientExists(documentId: string) {
   if (inMemoryStore.patients.some((patient) => patient.documentId === documentId)) {
-    throw new Error("Patient with this data already exists");
+    throw new AppError("Patient already exists", 400);
   }
 }

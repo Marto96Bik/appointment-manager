@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
-import { createPatient, getAllPatients } from "./patient.service";
-import { createPatientSchema } from "./patient.dto";
-import { logger } from "../../../lib/logger";
+import { createAppointment, getAllAppointments } from "./appointment.service";
+import { createAppointmentSchema } from "./appointent.dto";
+import { logger } from "@/lib/logger";
 import { AppError } from "../core/errors/appCustomError";
 import { ZodError } from "zod";
 
 export async function POST(req: Request) {
   const data = await req.json();
   try {
-    createPatientSchema.parse(data); // Validation of input data
-    const patient = createPatient(data);
-    return NextResponse.json(patient, { status: 201 });
+    createAppointmentSchema.parse(data); // Validation of input data
+    const appointment = await createAppointment(data);
+    return NextResponse.json(appointment, { status: 201 });
   } catch (e) {
     logger.error(e);
 
@@ -33,6 +33,6 @@ export async function POST(req: Request) {
 }
 
 export async function GET() {
-  const patients = getAllPatients();
-  return NextResponse.json(patients);
+  const appointments = await getAllAppointments();
+  return NextResponse.json(appointments);
 }
