@@ -1,19 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAppointmentById } from "../appointment.service";
+import { getAppointmentByEventId } from "../appointment.service";
+import { logger } from "@/lib/logger";
+import { ZodError } from "zod";
+import { AppError } from "../../core/errors/appCustomError";
 
-export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
-  const { id } = await context.params;
-  const numericId = parseInt(id, 10);
+export async function GET(req: NextRequest, context: { params: Promise<{ eventId: string }> }) {
+  try {
+    const { eventId } = await context.params;
 
-  if (isNaN(numericId)) {
-    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    const appointment = await getAppointmentByEventId(eventId);
+
+    if (!appointment) {
+      return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(appointment);
+  } catch (e) {
+    console.log(e);
+    logger.error(e);
+
+    if (e instanceof ZodError) {
+      return NextResponse.json(
+        {
+          message: "Invalid request data",
+          issues: e.issues,
+        },
+        { status: 400 },
+      );
+    }
+
+    if (e instanceof AppError) {
+      return NextResponse.json({ message: e.message }, { status: e.status });
+    }
+
+    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
   }
-
-  const Appointment = getAppointmentById(numericId);
-
-  if (!Appointment) {
-    return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
-  }
-
-  return NextResponse.json(Appointment);
 }

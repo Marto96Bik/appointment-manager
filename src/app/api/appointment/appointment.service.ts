@@ -51,6 +51,7 @@ export async function getCalendarEvents(dateStart: Date, maxResults: number) {
   return await calendarClient.listEvents(dateStart, maxResults);
 }
 
-export function getAppointmentById(id: number) {
-  return inMemoryStore.appointments.find((appointent) => appointent.id === id);
+export async function getAppointmentByEventId(id: string) {
+  const appointment = inMemoryStore.appointments.find((appointent) => appointent.eventId === id);
+  return appointment;
 }
