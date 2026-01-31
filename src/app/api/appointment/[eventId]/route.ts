@@ -14,8 +14,12 @@ export async function GET(req: NextRequest, context: { params: Promise<{ eventId
   try {
     const userId = await verifySession(req);
     const { eventId } = await context.params;
+<<<<<<< HEAD
 
     const appointment = await getAppointmentByEventId(userId, eventId);
+=======
+    const appointment = await getAppointmentByEventId(eventId);
+>>>>>>> cfdf5db (refactor: error codes)
     return NextResponse.json(appointment, { status: 200 });
   } catch (e) {
     console.log(e);
