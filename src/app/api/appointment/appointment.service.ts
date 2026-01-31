@@ -13,7 +13,7 @@ export async function createAppointment(data: CreateAppointmentDto) {
   if (!patient) {
     throw new AppError("Patient not found", 404);
   }
-  const message = `New appointment with ${patient?.name} ${patient?.lastname} `;
+  const message = `New appointment with ${patient?.name} ${patient?.lastName} `;
   const event = await calendarClient.createEvent({
     name: message,
     start: data.start,
@@ -28,7 +28,7 @@ export async function createAppointment(data: CreateAppointmentDto) {
     id: inMemoryStore.appointments.length + 1,
     start: data.start,
     end: data.end,
-    eventId: "event.id",
+    eventId: "event1",
     patientId: data.patientId,
   };
   inMemoryStore.appointments.push(newAppointment);
