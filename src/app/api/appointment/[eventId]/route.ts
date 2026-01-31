@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { editAppointment, getAppointmentByEventId } from "../appointment.service";
+import {
+  deleteAppointment,
+  editAppointment,
+  getAppointmentByEventId,
+} from "../appointment.service";
 import { logger } from "@/lib/logger";
 import { ZodError } from "zod";
 import { AppError } from "../../core/errors/appCustomError";
@@ -44,7 +48,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ event
   try {
     patchAppointmentSchema.parse(data); // Validation of input data
     const appointment = await editAppointment(eventId, data);
-    return NextResponse.json(appointment, { status: 201 });
+    return NextResponse.json(appointment, { status: 200 });
   } catch (e) {
     console.log(e);
     logger.error(e);
@@ -68,11 +72,9 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ event
 }
 export async function DELETE(req: NextRequest, context: { params: Promise<{ eventId: string }> }) {
   const { eventId } = await context.params;
-  const data = await req.json();
   try {
-    patchAppointmentSchema.parse(data); // Validation of input data
-    const appointment = await editAppointment(eventId, data);
-    return NextResponse.json(appointment, { status: 201 });
+    const appointment = await deleteAppointment(eventId);
+    return NextResponse.json(appointment, { status: 200 });
   } catch (e) {
     console.log(e);
     logger.error(e);

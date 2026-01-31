@@ -83,3 +83,21 @@ export async function editAppointment(eventId: string, data: PutAppointmentDto) 
 
   return updatedAppointment;
 }
+
+export async function deleteAppointment(eventId: string) {
+  /*
+  const event = await calendarClient.deleteEvent(
+
+  )
+  */
+
+  const index = inMemoryStore.appointments.findIndex((a) => a.eventId === eventId);
+
+  if (index === -1) {
+    throw new AppError("Appointment not found", 404);
+  }
+
+  inMemoryStore.appointments.splice(index, 1);
+
+  return inMemoryStore.appointments;
+}
