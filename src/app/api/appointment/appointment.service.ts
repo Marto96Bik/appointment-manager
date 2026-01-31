@@ -28,7 +28,7 @@ export async function createAppointment(userId: number, data: CreateAppointmentD
     id: inMemoryStore.appointments.length + 1,
     start: data.start,
     end: data.end,
-    eventId: "event.id",
+    eventId: "event1",
     patientId: data.patientId,
     userId,
   };

@@ -14,5 +14,12 @@ export const getAppointmentsSchema = z.object({
   patientId: z.coerce.number().positive().optional(),
 });
 
+export const putAppointmentSchema = z.object({
+  start: z.iso.datetime({ local: true }).optional(),
+  end: z.iso.datetime({ local: true }).optional(),
+  patientId: z.coerce.number().positive().optional(),
+});
+
 export type CreateAppointmentDto = z.infer<typeof createAppointmentSchema>;
 export type GetAppointmentsDto = z.infer<typeof getAppointmentsSchema>;
+export type PutAppointmentDto = z.infer<typeof putAppointmentSchema>;
