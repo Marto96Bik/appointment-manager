@@ -1,8 +1,10 @@
-import { CreateAppointmentDto, GetAppointmentsDto } from "./appointent.dto";
+import { CreateAppointmentDto, GetAppointmentsDto, PutAppointmentDto } from "./appointent.dto";
 import { inMemoryStore } from "../../../lib/inMemoryStore";
 import { GoogleCalendarClient } from "../../../integrations/google-calendar.client";
 import { getPatientById } from "../patient/patient.service";
 import { sendNotificationMessage } from "../../../lib/notification/notification.service";
+import { AppError } from "../core/errors/appCustomError";
+import { Appointment } from "./appointment.model";
 
 const calendarClient = new GoogleCalendarClient();
 
@@ -25,7 +27,7 @@ export async function createAppointment(data: CreateAppointmentDto) {
     id: inMemoryStore.appointments.length + 1,
     start: data.start,
     end: data.end,
-    eventId: "event.id",
+    eventId: "event1",
     patientId: data.patientId,
   };
   inMemoryStore.appointments.push(newAppointment);
@@ -54,4 +56,29 @@ export async function getCalendarEvents(dateStart: Date, maxResults: number) {
 export async function getAppointmentByEventId(id: string) {
   const appointment = inMemoryStore.appointments.find((appointent) => appointent.eventId === id);
   return appointment;
+}
+
+export async function editAppointment(eventId: string, data: PutAppointmentDto) {
+  /*
+  const event = await calendarClient.editEvent(
+
+  )
+  */
+
+  const index = inMemoryStore.appointments.findIndex((a) => a.eventId === eventId);
+
+  if (index === -1) {
+    throw new AppError("Appointment not found", 404);
+  }
+
+  const updatedAppointment: Appointment = {
+    ...inMemoryStore.appointments[index],
+    start: data.start ?? inMemoryStore.appointments[index].start,
+    end: data.end ?? inMemoryStore.appointments[index].end,
+    patientId: data.patientId ?? inMemoryStore.appointments[index].patientId,
+  };
+
+  inMemoryStore.appointments[index] = updatedAppointment;
+
+  return updatedAppointment;
 }
