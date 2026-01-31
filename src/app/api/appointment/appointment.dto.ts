@@ -6,7 +6,7 @@ export const createAppointmentSchema = z.object({
   patientId: z.coerce.number().positive(),
 });
 
-export const getAppointmentsSchema = z.object({
+export const getAppointmentSchema = z.object({
   startDate: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/)
@@ -21,5 +21,5 @@ export const putAppointmentSchema = z.object({
 });
 
 export type CreateAppointmentDto = z.infer<typeof createAppointmentSchema>;
-export type GetAppointmentsDto = z.infer<typeof getAppointmentsSchema>;
+export type GetAppointmentDto = z.infer<typeof getAppointmentSchema>;
 export type PutAppointmentDto = z.infer<typeof putAppointmentSchema>;

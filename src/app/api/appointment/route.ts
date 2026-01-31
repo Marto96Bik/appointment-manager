@@ -4,7 +4,7 @@ import {
   createAppointmentSchema,
   GetAppointmentsDto,
   getAppointmentsSchema,
-} from "./appointent.dto";
+} from "./appointment.dto";
 import { logger } from "@/lib/logger";
 import { AppError } from "../core/errors/appCustomError";
 import { ZodError } from "zod";

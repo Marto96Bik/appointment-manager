@@ -1,4 +1,4 @@
-import { CreateAppointmentDto, GetAppointmentsDto, PutAppointmentDto } from "./appointent.dto";
+import { CreateAppointmentDto, GetAppointmentsDto, PutAppointmentDto } from "./appointment.dto";
 import { inMemoryStore } from "../../../lib/inMemoryStore";
 import { GoogleCalendarClient } from "../../../integrations/google-calendar.client";
 import { getPatientById } from "../patient/patient.service";
@@ -54,7 +54,7 @@ export async function getCalendarEvents(dateStart: Date, maxResults: number) {
 }
 
 export async function getAppointmentByEventId(id: string) {
-  const appointment = inMemoryStore.appointments.find((appointent) => appointent.eventId === id);
+  const appointment = inMemoryStore.appointments.find((appointment) => appointment.eventId === id);
   return appointment;
 }
 
@@ -70,7 +70,6 @@ export async function editAppointment(eventId: string, data: PutAppointmentDto) 
   if (index === -1) {
     throw new AppError("Appointment not found", 404);
   }
-
   const updatedAppointment: Appointment = {
     ...inMemoryStore.appointments[index],
     start: data.start ?? inMemoryStore.appointments[index].start,
