@@ -1,8 +1,5 @@
-<<<<<<< HEAD
+
 import { CreateAppointmentDTO, GetAppointmentDTO, PatchAppointmentDTO } from "./appointment.dto";
-=======
-import { CreateAppointmentDto, GetAppointmentsDto, PutAppointmentDto } from "./appointment.dto";
->>>>>>> 64956a1 (style: fix typo 'appointent')
 import { inMemoryStore } from "../../../lib/inMemoryStore";
 import { GoogleCalendarClient } from "../../../integrations/google-calendar.client";
 import { getPatientById } from "../patient/patient.service";
