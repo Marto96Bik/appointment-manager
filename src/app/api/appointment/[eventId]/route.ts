@@ -12,14 +12,8 @@ import { patchAppointmentSchema } from "../appointment.dto";
 export async function GET(req: NextRequest, context: { params: Promise<{ eventId: string }> }) {
   try {
     const { eventId } = await context.params;
-
     const appointment = await getAppointmentByEventId(eventId);
-
-    if (!appointment) {
-      return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
-    }
-
-    return NextResponse.json(appointment);
+    return NextResponse.json(appointment, { status: 200 });
   } catch (e) {
     console.log(e);
     logger.error(e);

@@ -43,5 +43,5 @@ export async function GET(req: NextRequest) {
   const params = getAppointmentSchema.parse(rawParams);
 
   const appointments = await getAppointments(params);
-  return NextResponse.json(appointments);
+  return NextResponse.json(appointments, { status: 200 });
 }

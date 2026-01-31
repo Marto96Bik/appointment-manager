@@ -11,7 +11,7 @@ const calendarClient = new GoogleCalendarClient();
 export async function createAppointment(data: CreateAppointmentDto) {
   const patient = getPatientById(data.patientId);
   if (!patient) {
-    throw new Error("Patient not found");
+    throw new AppError("Patient not found", 404);
   }
   const message = `New appointment with ${patient?.name} ${patient?.lastName} `;
   /*const event = await calendarClient.createEvent({
@@ -55,6 +55,9 @@ export async function getCalendarEvents(dateStart: Date, maxResults: number) {
 
 export async function getAppointmentByEventId(id: string) {
   const appointment = inMemoryStore.appointments.find((appointment) => appointment.eventId === id);
+  if (!appointment) {
+    throw new AppError("Appointment not found", 404);
+  }
   return appointment;
 }
 
