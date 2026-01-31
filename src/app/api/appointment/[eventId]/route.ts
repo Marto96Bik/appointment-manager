@@ -90,32 +90,3 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ even
     return NextResponse.json({ message: "Internal server error" }, { status: 500 });
   }
 }
-
-export async function PUT(req: NextRequest, context: { params: Promise<{ eventId: string }> }) {
-  const { eventId } = await context.params;
-  const data = await req.json();
-  try {
-    patchAppointmentSchema.parse(data); // Validation of input data
-    const appointment = await editAppointment(eventId, data);
-    return NextResponse.json(appointment, { status: 201 });
-  } catch (e) {
-    console.log(e);
-    logger.error(e);
-
-    if (e instanceof ZodError) {
-      return NextResponse.json(
-        {
-          message: "Invalid request data",
-          issues: e.issues,
-        },
-        { status: 400 },
-      );
-    }
-
-    if (e instanceof AppError) {
-      return NextResponse.json({ message: e.message }, { status: e.status });
-    }
-
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
-  }
-}
