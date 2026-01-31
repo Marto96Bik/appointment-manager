@@ -21,7 +21,7 @@ export async function createAppointment(data: CreateAppointmentDto) {
   });
 
   if (!event.id) {
-    throw new Error("Calendar event was created without ID");
+    throw new AppError("Calendar event was created without ID", 503);
   }*/
   const newAppointment = {
     id: inMemoryStore.appointments.length + 1,
