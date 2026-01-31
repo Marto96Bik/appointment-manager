@@ -14,12 +14,16 @@ export const getAppointmentSchema = z.object({
   patientId: z.coerce.number().positive().optional(),
 });
 
-export const putAppointmentSchema = z.object({
-  start: z.iso.datetime({ local: true }).optional(),
-  end: z.iso.datetime({ local: true }).optional(),
-  patientId: z.coerce.number().positive().optional(),
-});
+export const patchAppointmentSchema = z
+  .object({
+    start: z.string().optional(),
+    end: z.string().optional(),
+    patientId: z.number().positive().optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "At least one field must be provided",
+  });
 
 export type CreateAppointmentDto = z.infer<typeof createAppointmentSchema>;
 export type GetAppointmentDto = z.infer<typeof getAppointmentSchema>;
-export type PutAppointmentDto = z.infer<typeof putAppointmentSchema>;
+export type PutAppointmentDto = z.infer<typeof patchAppointmentSchema>;

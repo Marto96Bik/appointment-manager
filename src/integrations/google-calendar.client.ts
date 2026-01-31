@@ -1,4 +1,4 @@
-import { google } from "googleapis";
+import { calendar_v3, google } from "googleapis";
 
 export class GoogleCalendarClient {
   private calendar;
@@ -15,7 +15,7 @@ export class GoogleCalendarClient {
       refresh_token: process.env.REFRESH_TOKEN,
     });
 
-    this.calendar = google.calendar({ version: "v3", auth: oauth2Client });
+    this.calendar = new calendar_v3.Calendar({ auth: oauth2Client });
   }
 
   async listEvents(fromDate: Date, maxResults?: number) {

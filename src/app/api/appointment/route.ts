@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAppointment, getAppointments } from "./appointment.service";
-import {
-  createAppointmentSchema,
-  GetAppointmentsDto,
-  getAppointmentsSchema,
-} from "./appointment.dto";
+import { createAppointmentSchema, getAppointmentSchema } from "./appointment.dto";
 import { logger } from "@/lib/logger";
 import { AppError } from "../core/errors/appCustomError";
 import { ZodError } from "zod";
@@ -44,7 +40,7 @@ export async function GET(req: NextRequest) {
     patientId: searchParams.get("patientId") ?? undefined,
   };
 
-  const params = getAppointmentsSchema.parse(rawParams);
+  const params = getAppointmentSchema.parse(rawParams);
 
   const appointments = await getAppointments(params);
   return NextResponse.json(appointments);

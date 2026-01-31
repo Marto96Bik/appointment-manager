@@ -3,7 +3,7 @@ import { editAppointment, getAppointmentByEventId } from "../appointment.service
 import { logger } from "@/lib/logger";
 import { ZodError } from "zod";
 import { AppError } from "../../core/errors/appCustomError";
-import { putAppointmentSchema } from "../appointment.dto";
+import { patchAppointmentSchema } from "../appointment.dto";
 
 export async function GET(req: NextRequest, context: { params: Promise<{ eventId: string }> }) {
   try {
@@ -42,7 +42,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ event
   const { eventId } = await context.params;
   const data = await req.json();
   try {
-    putAppointmentSchema.parse(data); // Validation of input data
+    patchAppointmentSchema.parse(data); // Validation of input data
     const appointment = await editAppointment(eventId, data);
     return NextResponse.json(appointment, { status: 201 });
   } catch (e) {
@@ -70,7 +70,7 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ even
   const { eventId } = await context.params;
   const data = await req.json();
   try {
-    putAppointmentSchema.parse(data); // Validation of input data
+    patchAppointmentSchema.parse(data); // Validation of input data
     const appointment = await editAppointment(eventId, data);
     return NextResponse.json(appointment, { status: 201 });
   } catch (e) {
