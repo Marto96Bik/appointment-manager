@@ -13,7 +13,7 @@ export async function createAppointment(data: CreateAppointmentDto) {
   if (!patient) {
     throw new AppError("Patient not found", 404);
   }
-  const message = `New appointment with ${patient?.name} ${patient?.lastName} `;
+  const message = `New appointment with ${patient?.name} ${patient?.lastname} `;
   const event = await calendarClient.createEvent({
     name: message,
     start: data.start,

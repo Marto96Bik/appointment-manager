@@ -24,7 +24,7 @@ export function getPatientsList(filters: getPatientDto) {
       (!filters.id || patient.id === filters.id) &&
       (!filters.name || patient.name.toLowerCase().includes(filters.name.toLowerCase())) &&
       (!filters.lastName ||
-        patient.lastName.toLowerCase().includes(filters.lastName.toLowerCase())) &&
+        patient.lastname.toLowerCase().includes(filters.lastName.toLowerCase())) &&
       (!filters.phone || patient.phone === filters.phone) &&
       (!filters.documentId || patient.documentId === filters.documentId)
     );
@@ -44,7 +44,7 @@ export function editPatient(patientId: number, data: patchPatientDto) {
   const updatedPatient: Patient = {
     ...patient,
     name: data.name ?? patient.name,
-    lastName: data.lastName ?? patient.lastName,
+    lastname: data.lastName ?? patient.lastname,
     phone: data.phone ?? patient.phone,
     documentId: data.documentId ?? patient.documentId,
   };
