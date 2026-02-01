@@ -23,7 +23,7 @@ export function getPatientsList(filters: getPatientDto) {
       (!filters.id || patient.id === filters.id) &&
       (!filters.name || patient.name.toLowerCase().includes(filters.name.toLowerCase())) &&
       (!filters.lastname ||
-        patient.lastName.toLowerCase().includes(filters.lastname.toLowerCase())) &&
+        patient.lastname.toLowerCase().includes(filters.lastname.toLowerCase())) &&
       (!filters.phone || patient.phone === filters.phone) &&
       (!filters.documentId || patient.documentId === filters.documentId)
     );
