@@ -18,7 +18,6 @@ export const patchAppointmentSchema = z
   .object({
     start: z.string().optional(),
     end: z.string().optional(),
-    patientId: z.number().positive().optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: "At least one field must be provided",

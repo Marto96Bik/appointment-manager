@@ -14,7 +14,7 @@ export async function createAppointment(data: CreateAppointmentDto) {
     throw new AppError("Patient not found", 404);
   }
   const message = `New appointment with ${patient?.name} ${patient?.lastname} `;
-  /*const event = await calendarClient.createEvent({
+  const event = await calendarClient.createEvent({
     name: message,
     start: data.start,
     end: data.end,
@@ -22,12 +22,13 @@ export async function createAppointment(data: CreateAppointmentDto) {
 
   if (!event.id) {
     throw new AppError("Calendar event was created without ID", 503);
-  }*/
+  }
+
   const newAppointment = {
     id: inMemoryStore.appointments.length + 1,
     start: data.start,
     end: data.end,
-    eventId: "event1",
+    eventId: event.id,
     patientId: data.patientId,
   };
   inMemoryStore.appointments.push(newAppointment);
@@ -62,11 +63,10 @@ export async function getAppointmentByEventId(id: string) {
 }
 
 export async function editAppointment(eventId: string, data: PutAppointmentDto) {
-  /*
-  const event = await calendarClient.editEvent(
-
-  )
-  */
+  await calendarClient.editEvent(eventId, {
+    start: data.start,
+    end: data.end,
+  });
 
   const index = inMemoryStore.appointments.findIndex((a) => a.eventId === eventId);
 
@@ -79,11 +79,15 @@ export async function editAppointment(eventId: string, data: PutAppointmentDto) 
     ...appointment,
     start: data.start ?? appointment.start,
     end: data.end ?? appointment.end,
-    patientId: data.patientId ?? appointment.patientId,
   };
 
-  inMemoryStore.appointments[index] = updatedAppointment;
+  const patient = getPatientById(updatedAppointment.patientId);
+  if (!patient) {
+    throw new AppError("Patient not found", 404);
+  }
 
+  inMemoryStore.appointments[index] = updatedAppointment;
+  //await sendNotificationMessage(patient, updatedAppointment, "update");
   return updatedAppointment;
 }
 

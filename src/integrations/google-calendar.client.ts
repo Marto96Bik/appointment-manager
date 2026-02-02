@@ -1,3 +1,4 @@
+import { AppError } from "@/app/api/core/errors/appCustomError";
 import { calendar_v3, google } from "googleapis";
 
 export class GoogleCalendarClient {
@@ -48,5 +49,34 @@ export class GoogleCalendarClient {
       },
     });
     return await res.data;
+  }
+
+  async editEvent(eventId: string, data: { name?: string; start?: string; end?: string }) {
+    const res = await this.calendar.events.patch({
+      calendarId: "primary",
+      eventId,
+      sendUpdates: "all",
+      requestBody: {
+        ...(data.name && { summary: data.name }),
+        ...(data.start && {
+          start: {
+            dateTime: data.start,
+            timeZone: "Asia/Jerusalem",
+          },
+        }),
+        ...(data.end && {
+          end: {
+            dateTime: data.end,
+            timeZone: "Asia/Jerusalem",
+          },
+        }),
+      },
+    });
+
+    if (res.status !== 200 || res.data.status === "cancelled") {
+      throw new AppError("Google Calendar did not update event", 409);
+    }
+
+    return res.data;
   }
 }
