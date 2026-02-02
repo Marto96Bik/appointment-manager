@@ -92,11 +92,7 @@ export async function editAppointment(eventId: string, data: PutAppointmentDto) 
 }
 
 export async function deleteAppointment(eventId: string) {
-  /*
-  const event = await calendarClient.deleteEvent(
-
-  )
-  */
+  await calendarClient.deleteEvent(eventId);
 
   const index = inMemoryStore.appointments.findIndex((a) => a.eventId === eventId);
 
@@ -105,6 +101,6 @@ export async function deleteAppointment(eventId: string) {
   }
 
   inMemoryStore.appointments.splice(index, 1);
-
+  //await sendNotificationMessage(patient, updatedAppointment, "cancel");
   return inMemoryStore.appointments;
 }

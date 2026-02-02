@@ -84,4 +84,18 @@ export class GoogleCalendarClient {
 
     return res.data;
   }
+
+  async deleteEvent(eventId: string) {
+    const res = await this.calendar.events.delete({
+      calendarId: "primary",
+      eventId,
+      sendUpdates: "all",
+    });
+
+    if (res.status !== 204) {
+      throw new Error("Google Calendar delete failed");
+    }
+
+    return res.data;
+  }
 }
