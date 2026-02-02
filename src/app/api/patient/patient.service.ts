@@ -53,6 +53,20 @@ export function editPatient(patientId: number, data: patchPatientDto) {
   return updatedPatient;
 }
 
+export function deletePatient(patientId: number) {
+  // TODO soft delete
+
+  const index = inMemoryStore.patients.findIndex((a) => a.id === patientId);
+
+  if (index === -1) {
+    throw new AppError("Patient not found", 404);
+  }
+
+  inMemoryStore.patients.splice(index, 1);
+
+  return inMemoryStore.patients;
+}
+
 function patientExists(documentId: string) {
   if (inMemoryStore.patients.some((patient) => patient.documentId === documentId)) {
     throw new AppError("Patient already exists", 400);
