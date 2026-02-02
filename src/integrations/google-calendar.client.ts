@@ -48,6 +48,11 @@ export class GoogleCalendarClient {
         },
       },
     });
+
+    if (res.status !== 200 || res.data.status === "cancelled") {
+      throw new AppError("Google Calendar did not update event", 409);
+    }
+
     return await res.data;
   }
 
