@@ -13,11 +13,6 @@ export function createPatient(data: CreatePatientDto) {
   return newPatient;
 }
 
-export function getPatientById(id: number) {
-  const patient = inMemoryStore.patients.find((patient) => patient.id === id);
-  return patient;
-}
-
 export function getPatientsList(filters: getPatientDto) {
   const patient = inMemoryStore.patients.filter((patient) => {
     return (
