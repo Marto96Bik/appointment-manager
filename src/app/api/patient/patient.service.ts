@@ -44,7 +44,7 @@ export function editPatient(patientId: number, data: patchPatientDto) {
   const updatedPatient: Patient = {
     ...patient,
     name: data.name ?? patient.name,
-    lastname: data.lastName ?? patient.lastname,
+    lastname: data.lastname ?? patient.lastname,
     phone: data.phone ?? patient.phone,
     documentId: data.documentId ?? patient.documentId,
   };
