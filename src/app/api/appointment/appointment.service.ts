@@ -13,8 +13,18 @@ export async function createAppointment(userId: number, data: CreateAppointmentD
   const calendarClient = getCalendarClient(userId);
   const message = `New appointment with ${patient?.name} ${patient?.lastname} `;
 
+<<<<<<< HEAD
   // New event in google calendar
   const event = await calendarClient.createEvent({
+=======
+export async function createAppointment(data: CreateAppointmentDto) {
+  const patient = getPatientById(data.patientId);
+  if (!patient) {
+    throw new AppError("Patient not found", 404);
+  }
+  const message = `New appointment with ${patient?.name} ${patient?.lastname} `;
+  /*const event = await calendarClient.createEvent({
+>>>>>>> 991616f (feat: delete patient)
     name: message,
     start: data.start,
     end: data.end,
