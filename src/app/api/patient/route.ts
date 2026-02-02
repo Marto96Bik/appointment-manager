@@ -6,8 +6,8 @@ import { AppError } from "../core/errors/appCustomError";
 import { ZodError } from "zod";
 
 export async function POST(req: Request) {
-  const data = await req.json();
   try {
+    const data = await req.json();
     createPatientSchema.parse(data); // Validation of input data
     const patient = createPatient(data);
     return NextResponse.json(patient, { status: 201 });

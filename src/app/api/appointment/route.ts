@@ -6,8 +6,8 @@ import { AppError } from "../core/errors/appCustomError";
 import { ZodError } from "zod";
 
 export async function POST(req: NextRequest) {
-  const data = await req.json();
   try {
+    const data = await req.json();
     createAppointmentSchema.parse(data); // Validation of input data
     const appointment = await createAppointment(data);
     return NextResponse.json(appointment, { status: 201 });

@@ -37,9 +37,9 @@ export async function GET(req: NextRequest, context: { params: Promise<{ eventId
 }
 
 export async function PATCH(req: NextRequest, context: { params: Promise<{ eventId: string }> }) {
-  const { eventId } = await context.params;
-  const data = await req.json();
   try {
+    const { eventId } = await context.params;
+    const data = await req.json();
     patchAppointmentSchema.parse(data); // Validation of input data
     const appointment = await editAppointment(eventId, data);
     return NextResponse.json(appointment, { status: 200 });
@@ -65,8 +65,8 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ event
   }
 }
 export async function DELETE(req: NextRequest, context: { params: Promise<{ eventId: string }> }) {
-  const { eventId } = await context.params;
   try {
+    const { eventId } = await context.params;
     const appointment = await deleteAppointment(eventId);
     return NextResponse.json(appointment, { status: 200 });
   } catch (e) {
