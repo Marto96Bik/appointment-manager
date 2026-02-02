@@ -23,8 +23,12 @@ export async function createAppointment(data: CreateAppointmentDto) {
     throw new AppError("Patient not found", 404);
   }
   const message = `New appointment with ${patient?.name} ${patient?.lastname} `;
+<<<<<<< HEAD
   /*const event = await calendarClient.createEvent({
 >>>>>>> 991616f (feat: delete patient)
+=======
+  const event = await calendarClient.createEvent({
+>>>>>>> 69824e8 (fead: update appointment - google calendar)
     name: message,
     start: data.start,
     end: data.end,
@@ -34,12 +38,15 @@ export async function createAppointment(data: CreateAppointmentDto) {
     throw new AppError("Calendar event was created without ID", 503);
   }
 
+<<<<<<< HEAD
   // Add appointment to db
+=======
+>>>>>>> 69824e8 (fead: update appointment - google calendar)
   const newAppointment = {
     id: inMemoryStore.appointments.length + 1,
     start: data.start,
     end: data.end,
-    eventId: "event1",
+    eventId: event.id,
     patientId: data.patientId,
     userId,
   };
@@ -77,6 +84,7 @@ export async function getAppointmentByEventId(userId: number, id: string) {
   return appointment;
 }
 
+<<<<<<< HEAD
 export async function updateAppointment(
   userId: number,
   eventId: string,
@@ -84,6 +92,19 @@ export async function updateAppointment(
 ) {
   // Appointment search
   const index = getIndexByEventId(userId, eventId);
+=======
+export async function editAppointment(eventId: string, data: PutAppointmentDto) {
+  await calendarClient.editEvent(eventId, {
+    start: data.start,
+    end: data.end,
+  });
+
+  const index = inMemoryStore.appointments.findIndex((a) => a.eventId === eventId);
+
+  if (index === -1) {
+    throw new AppError("Appointment not found", 404);
+  }
+>>>>>>> 69824e8 (fead: update appointment - google calendar)
   const appointment = inMemoryStore.appointments[index];
 
   // New appointment data
@@ -93,6 +114,7 @@ export async function updateAppointment(
     end: data.end ?? appointment.end,
   };
 
+<<<<<<< HEAD
   // DB update
   const patient = getPatientById(userId, updatedAppointment.patientId);
   inMemoryStore.appointments[index] = updatedAppointment;
@@ -106,6 +128,15 @@ export async function updateAppointment(
 
   // Send custom notification
   sendNotification(patient, updatedAppointment, "update");
+=======
+  const patient = getPatientById(updatedAppointment.patientId);
+  if (!patient) {
+    throw new AppError("Patient not found", 404);
+  }
+
+  inMemoryStore.appointments[index] = updatedAppointment;
+  //await sendNotificationMessage(patient, updatedAppointment, "update");
+>>>>>>> 69824e8 (fead: update appointment - google calendar)
   return updatedAppointment;
 }
 
