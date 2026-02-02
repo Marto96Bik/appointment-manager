@@ -1,6 +1,7 @@
-import { CreatePatientDto, getPatientDto } from "./patient.dto";
+import { CreatePatientDto, getPatientDto, patchPatientDto } from "./patient.dto";
 import { inMemoryStore } from "../../../lib/inMemoryStore";
 import { AppError } from "../core/errors/appCustomError";
+import { Patient } from "./patient.model";
 
 export function createPatient(data: CreatePatientDto) {
   patientExists(data.documentId);
@@ -29,6 +30,27 @@ export function getPatientsList(filters: getPatientDto) {
     );
   });
   return patient;
+}
+
+export function editPatient(patientId: number, data: patchPatientDto) {
+  const index = inMemoryStore.patients.findIndex((p) => p.id === patientId);
+
+  if (index === -1) {
+    throw new AppError("Patient not found", 404);
+  }
+
+  const patient = inMemoryStore.patients[index];
+
+  const updatedPatient: Patient = {
+    ...patient,
+    name: data.name ?? patient.name,
+    lastname: data.lastname ?? patient.lastname,
+    phone: data.phone ?? patient.phone,
+    documentId: data.documentId ?? patient.documentId,
+  };
+
+  inMemoryStore.patients[index] = updatedPatient;
+  return updatedPatient;
 }
 
 function patientExists(documentId: string) {
