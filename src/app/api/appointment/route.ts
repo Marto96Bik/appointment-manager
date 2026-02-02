@@ -6,6 +6,7 @@ import { AppError } from "../core/errors/appCustomError";
 import { ZodError } from "zod";
 import { verifySession } from "../auth/auth.service";
 
+<<<<<<< HEAD
 export async function GET(req: NextRequest) {
   try {
     const userId = await verifySession(req);
@@ -14,6 +15,14 @@ export async function GET(req: NextRequest) {
 
     const appointments = await getAppointments(userId, filters);
     return NextResponse.json(appointments, { status: 200 });
+=======
+export async function POST(req: NextRequest) {
+  try {
+    const data = await req.json();
+    createAppointmentSchema.parse(data); // Validation of input data
+    const appointment = await createAppointment(data);
+    return NextResponse.json(appointment, { status: 201 });
+>>>>>>> 2e85b92 (feat: wrap logic in try-catch)
   } catch (e) {
     logger.error(e);
 
