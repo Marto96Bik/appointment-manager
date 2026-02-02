@@ -2,7 +2,7 @@ import { CreateAppointmentDto, GetAppointmentDto, PutAppointmentDto } from "./ap
 import { inMemoryStore } from "../../../lib/inMemoryStore";
 import { GoogleCalendarClient } from "../../../integrations/google-calendar.client";
 import { getPatientById } from "../patient/patient.service";
-import { sendNotificationMessage } from "../../../lib/notification/notification.service";
+import { sendNotification } from "../../../lib/notification/notification.service";
 import { AppError } from "../core/errors/appCustomError";
 import { Appointment } from "./appointment.model";
 
@@ -32,7 +32,7 @@ export async function createAppointment(data: CreateAppointmentDto) {
     patientId: data.patientId,
   };
   inMemoryStore.appointments.push(newAppointment);
-  //await sendNotificationMessage(patient, newAppointment);
+  await sendNotification(patient, newAppointment, "create");
   return newAppointment;
 }
 
@@ -87,7 +87,7 @@ export async function editAppointment(eventId: string, data: PutAppointmentDto) 
   }
 
   inMemoryStore.appointments[index] = updatedAppointment;
-  //await sendNotificationMessage(patient, updatedAppointment, "update");
+  await sendNotification(patient, updatedAppointment, "update");
   return updatedAppointment;
 }
 
@@ -100,7 +100,14 @@ export async function deleteAppointment(eventId: string) {
     throw new AppError("Appointment not found", 404);
   }
 
+  const deletedAppointment = inMemoryStore.appointments[index];
+
+  const patient = getPatientById(deletedAppointment.patientId);
+  if (!patient) {
+    throw new AppError("Patient not found", 404);
+  }
+
   inMemoryStore.appointments.splice(index, 1);
-  //await sendNotificationMessage(patient, updatedAppointment, "cancel");
+  await sendNotification(patient, deletedAppointment, "delete");
   return inMemoryStore.appointments;
 }
