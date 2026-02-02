@@ -28,7 +28,7 @@ export async function createAppointment(data: CreateAppointmentDto) {
     id: inMemoryStore.appointments.length + 1,
     start: data.start,
     end: data.end,
-    eventId: "event1",
+    eventId: event.id,
     patientId: data.patientId,
   };
   inMemoryStore.appointments.push(newAppointment);
