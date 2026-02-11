@@ -8,11 +8,14 @@ import { logger } from "@/lib/logger";
 import { ZodError } from "zod";
 import { AppError } from "../../core/errors/appCustomError";
 import { patchAppointmentSchema } from "../appointment.dto";
+import { verifySession } from "../../auth/auth.service";
 
 export async function GET(req: NextRequest, context: { params: Promise<{ eventId: string }> }) {
   try {
+    const userId = await verifySession(req);
     const { eventId } = await context.params;
-    const appointment = await getAppointmentByEventId(eventId);
+
+    const appointment = await getAppointmentByEventId(userId, eventId);
     return NextResponse.json(appointment, { status: 200 });
   } catch (e) {
     console.log(e);
@@ -38,10 +41,12 @@ export async function GET(req: NextRequest, context: { params: Promise<{ eventId
 
 export async function PATCH(req: NextRequest, context: { params: Promise<{ eventId: string }> }) {
   try {
+    const userId = await verifySession(req);
     const { eventId } = await context.params;
     const data = await req.json();
-    patchAppointmentSchema.parse(data); // Validation of input data
-    const appointment = await editAppointment(eventId, data);
+
+    patchAppointmentSchema.parse(data); // Validate input data
+    const appointment = await editAppointment(userId, eventId, data);
     return NextResponse.json(appointment, { status: 200 });
   } catch (e) {
     console.log(e);
@@ -66,8 +71,10 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ event
 }
 export async function DELETE(req: NextRequest, context: { params: Promise<{ eventId: string }> }) {
   try {
+    const userId = await verifySession(req);
     const { eventId } = await context.params;
-    const appointment = await deleteAppointment(eventId);
+
+    const appointment = await deleteAppointment(userId, eventId);
     return NextResponse.json(appointment, { status: 200 });
   } catch (e) {
     console.log(e);

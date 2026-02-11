@@ -4,4 +4,5 @@ export interface Appointment {
   end: string;
   eventId: string;
   patientId: number;
+  userId: number;
 }
