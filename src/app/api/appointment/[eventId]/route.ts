@@ -14,12 +14,8 @@ export async function GET(req: NextRequest, context: { params: Promise<{ eventId
   try {
     const userId = await verifySession(req);
     const { eventId } = await context.params;
-<<<<<<< HEAD
 
     const appointment = await getAppointmentByEventId(userId, eventId);
-=======
-    const appointment = await getAppointmentByEventId(eventId);
->>>>>>> cfdf5db (refactor: error codes)
     return NextResponse.json(appointment, { status: 200 });
   } catch (e) {
     console.log(e);
@@ -45,19 +41,12 @@ export async function GET(req: NextRequest, context: { params: Promise<{ eventId
 
 export async function PATCH(req: NextRequest, context: { params: Promise<{ eventId: string }> }) {
   try {
-<<<<<<< HEAD
     const userId = await verifySession(req);
     const { eventId } = await context.params;
     const data = await req.json();
 
     patchAppointmentSchema.parse(data); // Validate input data
     const appointment = await updateAppointment(userId, eventId, data);
-=======
-    const { eventId } = await context.params;
-    const data = await req.json();
-    patchAppointmentSchema.parse(data); // Validation of input data
-    const appointment = await editAppointment(eventId, data);
->>>>>>> 2e85b92 (feat: wrap logic in try-catch)
     return NextResponse.json(appointment, { status: 200 });
   } catch (e) {
     console.log(e);
@@ -82,15 +71,10 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ event
 }
 export async function DELETE(req: NextRequest, context: { params: Promise<{ eventId: string }> }) {
   try {
-<<<<<<< HEAD
     const userId = await verifySession(req);
     const { eventId } = await context.params;
 
     const appointment = await deleteAppointment(userId, eventId);
-=======
-    const { eventId } = await context.params;
-    const appointment = await deleteAppointment(eventId);
->>>>>>> 2e85b92 (feat: wrap logic in try-catch)
     return NextResponse.json(appointment, { status: 200 });
   } catch (e) {
     console.log(e);
