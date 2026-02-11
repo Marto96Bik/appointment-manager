@@ -23,6 +23,6 @@ export const patchPatientSchema = z.object({
   documentId: z.string().min(1).optional(),
 });
 
-export type CreatePatientDto = z.infer<typeof createPatientSchema>;
-export type getPatientDto = z.infer<typeof getPatientSchema>;
-export type patchPatientDto = z.infer<typeof patchPatientSchema>;
+export type CreatePatientDTO = z.infer<typeof createPatientSchema>;
+export type getPatientDTO = z.infer<typeof getPatientSchema>;
+export type patchPatientDTO = z.infer<typeof patchPatientSchema>;

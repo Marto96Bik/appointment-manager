@@ -23,6 +23,6 @@ export const patchAppointmentSchema = z
     message: "At least one field must be provided",
   });
 
-export type CreateAppointmentDto = z.infer<typeof createAppointmentSchema>;
-export type GetAppointmentDto = z.infer<typeof getAppointmentSchema>;
-export type PutAppointmentDto = z.infer<typeof patchAppointmentSchema>;
+export type CreateAppointmentDTO = z.infer<typeof createAppointmentSchema>;
+export type GetAppointmentDTO = z.infer<typeof getAppointmentSchema>;
+export type PatchAppointmentDTO = z.infer<typeof patchAppointmentSchema>;

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   deleteAppointment,
-  editAppointment,
   getAppointmentByEventId,
+  updateAppointment,
 } from "../appointment.service";
-import { logger } from "@/lib/logger";
+import { logger } from "../../../../lib/logger";
 import { ZodError } from "zod";
 import { AppError } from "../../core/errors/appCustomError";
 import { patchAppointmentSchema } from "../appointment.dto";
@@ -46,7 +46,7 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ event
     const data = await req.json();
 
     patchAppointmentSchema.parse(data); // Validate input data
-    const appointment = await editAppointment(userId, eventId, data);
+    const appointment = await updateAppointment(userId, eventId, data);
     return NextResponse.json(appointment, { status: 200 });
   } catch (e) {
     console.log(e);
