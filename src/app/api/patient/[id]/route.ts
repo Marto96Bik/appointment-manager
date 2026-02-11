@@ -3,7 +3,7 @@ import { logger } from "../../../../lib/logger";
 import { ZodError } from "zod";
 import { AppError } from "../../core/errors/appCustomError";
 import { patchPatientSchema } from "../patient.dto";
-import { deletePatient, editPatient, getPatientById } from "../patient.service";
+import { deletePatient, updatePatient, getPatientById } from "../patient.service";
 import { verifySession } from "../../auth/auth.service";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -45,7 +45,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const data = await req.json();
     patchPatientSchema.parse(data); // Validate input data
 
-    const patient = await editPatient(userId, patientId, data);
+    const patient = await updatePatient(userId, patientId, data);
     return NextResponse.json(patient, { status: 200 });
   } catch (e) {
     console.log(e);

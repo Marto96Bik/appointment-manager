@@ -1,4 +1,4 @@
-import { CreateAppointmentDto, GetAppointmentDto, PutAppointmentDto } from "./appointment.dto";
+import { CreateAppointmentDTO, GetAppointmentDTO, PatchAppointmentDTO } from "./appointment.dto";
 import { inMemoryStore } from "../../../lib/inMemoryStore";
 import { GoogleCalendarClient } from "../../../integrations/google-calendar.client";
 import { getPatientById } from "../patient/patient.service";
@@ -7,7 +7,7 @@ import { AppError } from "../core/errors/appCustomError";
 import { Appointment } from "./appointment.model";
 import { findUserByUserId } from "../user/user.service";
 
-export async function createAppointment(userId: number, data: CreateAppointmentDto) {
+export async function createAppointment(userId: number, data: CreateAppointmentDTO) {
   const patient = getPatientById(userId, data.patientId);
   const calendarClient = getCalendarClient(userId);
   const message = `New appointment with ${patient?.name} ${patient?.lastname} `;
@@ -39,7 +39,7 @@ export async function createAppointment(userId: number, data: CreateAppointmentD
   return newAppointment;
 }
 
-export async function getAppointments(userId: number, params: GetAppointmentDto) {
+export async function getAppointments(userId: number, params: GetAppointmentDTO) {
   const { startDate, patientId } = params;
 
   return inMemoryStore.appointments.filter((a) => {
@@ -66,9 +66,13 @@ export async function getAppointmentByEventId(userId: number, id: string) {
   return appointment;
 }
 
-export async function editAppointment(userId: number, eventId: string, data: PutAppointmentDto) {
+export async function updateAppointment(
+  userId: number,
+  eventId: string,
+  data: PatchAppointmentDTO,
+) {
   // Appointment search
-  const index = getIndexByEventId(eventId);
+  const index = getIndexByEventId(userId, eventId);
   const appointment = inMemoryStore.appointments[index];
 
   // New appointment data
@@ -96,7 +100,7 @@ export async function editAppointment(userId: number, eventId: string, data: Put
 
 export async function deleteAppointment(userId: number, eventId: string) {
   // Search appointment
-  const index = getIndexByEventId(eventId);
+  const index = getIndexByEventId(userId, eventId);
   const deletedAppointment = inMemoryStore.appointments[index];
 
   // DB delete
@@ -120,8 +124,10 @@ function getCalendarClient(userId: number) {
   return new GoogleCalendarClient(user.refreshToken);
 }
 
-function getIndexByEventId(eventId: string) {
-  const index = inMemoryStore.appointments.findIndex((a) => a.eventId === eventId);
+function getIndexByEventId(userId: number, eventId: string) {
+  const index = inMemoryStore.appointments.findIndex(
+    (a) => a.userId === userId && a.eventId === eventId,
+  );
   if (index === -1) {
     throw new AppError("Appointment not found", 404);
   }

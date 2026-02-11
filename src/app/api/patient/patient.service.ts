@@ -1,9 +1,9 @@
-import { CreatePatientDto, getPatientDto, patchPatientDto } from "./patient.dto";
+import { CreatePatientDTO, getPatientDTO, patchPatientDTO } from "./patient.dto";
 import { inMemoryStore } from "../../../lib/inMemoryStore";
 import { AppError } from "../core/errors/appCustomError";
 import { Patient } from "./patient.model";
 
-export function createPatient(userId: number, data: CreatePatientDto) {
+export function createPatient(userId: number, data: CreatePatientDTO) {
   patientExists(userId, data.documentId);
   const newPatient = {
     id: inMemoryStore.patients.length + 1,
@@ -22,7 +22,7 @@ export function getPatientById(userId: number, patientId: number) {
   return patient;
 }
 
-export function getPatientsList(userId: number, filters: getPatientDto) {
+export function getPatientsList(userId: number, filters: getPatientDTO) {
   // Filter by user
   const userPatients = inMemoryStore.patients.filter((patient) => patient.userId === userId);
 
@@ -40,13 +40,8 @@ export function getPatientsList(userId: number, filters: getPatientDto) {
   return filteredPatients;
 }
 
-export function editPatient(userId: number, patientId: number, data: patchPatientDto) {
-  const index = inMemoryStore.patients.findIndex((p) => p.userId === userId && p.id === patientId);
-
-  if (index === -1) {
-    throw new AppError("Patient not found", 404);
-  }
-
+export function updatePatient(userId: number, patientId: number, data: patchPatientDTO) {
+  const index = getIndexByPatientId(userId, patientId);
   const patient = inMemoryStore.patients[index];
 
   const updatedPatient: Patient = {
@@ -63,15 +58,8 @@ export function editPatient(userId: number, patientId: number, data: patchPatien
 
 export function deletePatient(userId: number, patientId: number) {
   // TODO soft delete
-
-  const index = inMemoryStore.patients.findIndex((p) => p.userId === userId && p.id === patientId);
-
-  if (index === -1) {
-    throw new AppError("Patient not found", 404);
-  }
-
+  const index = getIndexByPatientId(userId, patientId);
   inMemoryStore.patients.splice(index, 1);
-
   return inMemoryStore.patients;
 }
 
@@ -79,4 +67,12 @@ function patientExists(userId: number, documentId: string) {
   if (inMemoryStore.patients.some((p) => p.userId === userId && p.documentId === documentId)) {
     throw new AppError("Patient already exists", 400);
   }
+}
+
+function getIndexByPatientId(userId: number, patientId: number) {
+  const index = inMemoryStore.patients.findIndex((p) => p.userId === userId && p.id === patientId);
+  if (index === -1) {
+    throw new AppError("Patient not found", 404);
+  }
+  return index;
 }
