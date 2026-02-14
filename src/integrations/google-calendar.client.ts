@@ -18,11 +18,11 @@ export class GoogleCalendarClient {
     this.calendar = new calendar_v3.Calendar({ auth: oauth2Client });
   }
 
-  async listEvents(fromDate: Date, maxResults?: number) {
+  async listEvents(dateFrom: Date, dateUntil: Date) {
     const res = await this.calendar.events.list({
       calendarId: "primary", // Calendar identifier.
-      timeMin: fromDate.toISOString(),
-      maxResults: maxResults,
+      timeMin: dateFrom.toISOString(),
+      timeMax: dateUntil.toISOString(),
       singleEvents: true,
       orderBy: "startTime",
     });
