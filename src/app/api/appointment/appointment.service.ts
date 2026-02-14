@@ -52,11 +52,6 @@ export async function getAppointments(userId: number, params: GetAppointmentDTO)
   });
 }
 
-export async function getCalendarEvents(userId: number, dateStart: Date, maxResults: number) {
-  const calendarClient = getCalendarClient(userId);
-  return await calendarClient.listEvents(dateStart, maxResults);
-}
-
 export async function getAppointmentByEventId(userId: number, id: string) {
   const appointment = inMemoryStore.appointments.find(
     (appointment) => userId === appointment.userId && appointment.eventId === id,

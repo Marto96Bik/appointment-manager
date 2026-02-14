@@ -6,16 +6,23 @@ import { findUserByGoogleId, findUserByUserId } from "../user/user.service";
 const secret = new TextEncoder().encode(process.env.SESSION_SECRET!);
 
 export async function verifySession(req: NextRequest) {
+  /*
   const authHeader = req.headers.get("authorization");
-  if (!authHeader?.startsWith("Bearer ")) {
-    throw new AppError("Missing authorization token", 401);
-  }
+    if (!authHeader?.startsWith("Bearer ")) {
+      throw new AppError("Missing authorization token", 401);
+    }
+  const tokenAuth = authHeader.replace("Bearer ", "");
+  */
 
-  const token = authHeader.replace("Bearer ", "");
+  const jwt = req.cookies.get("jwt")?.value;
+
+  if (!jwt) {
+    throw new AppError("Missing session", 401);
+  }
 
   let payload: { googleId: string; sid: string };
   try {
-    ({ payload } = await jwtVerify(token, secret));
+    ({ payload } = await jwtVerify(jwt, secret));
   } catch {
     throw new AppError("Invalid or expired session", 401);
   }
