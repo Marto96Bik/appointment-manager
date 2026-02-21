@@ -1,8 +1,12 @@
-import { CreateAppointmentDTO, GetAppointmentDTO, PatchAppointmentDTO } from "./appointment.dto";
-import { inMemoryStore } from "../../../lib/inMemoryStore";
-import { GoogleCalendarClient } from "../../../integrations/google-calendar.client";
+import {
+  CreateAppointmentDTO,
+  GetAppointmentDTO,
+  PatchAppointmentDTO,
+} from "@/shared/schemas/appointment.schema";
+import { inMemoryStore } from "@/lib/inMemoryStore";
+import { GoogleCalendarClient } from "@/integrations/google-calendar.client";
 import { getPatientById } from "../patient/patient.service";
-import { sendNotification } from "../../../lib/notification/notification.service";
+import { sendNotification } from "@/lib/notification/notification.service";
 import { AppError } from "../core/errors/appCustomError";
 import { Appointment } from "./appointment.model";
 import { findUserByUserId } from "../user/user.service";

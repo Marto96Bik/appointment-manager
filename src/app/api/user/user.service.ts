@@ -1,5 +1,5 @@
 import { AppError } from "../core/errors/appCustomError";
-import { CreateUserDto, UpdateUserDto } from "./user.dto";
+import { CreateUserDto, UpdateUserDto } from "./user.schema";
 import { User } from "./user.model";
 import { inMemoryStore } from "@/lib/inMemoryStore";
 

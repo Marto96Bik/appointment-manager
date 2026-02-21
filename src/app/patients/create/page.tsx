@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
-import { createPatientSchema } from "@/app/api/patient/patient.dto";
+import { createPatientSchema } from "@/shared/schemas/patient.schema";
 
 type PatientForm = z.infer<typeof createPatientSchema>;
 

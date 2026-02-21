@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { z } from "zod";
-import { patchPatientSchema } from "@/app/api/patient/patient.dto";
+import { patchPatientSchema } from "@/shared/schemas/patient.schema";
 
 type PatientForm = z.infer<typeof patchPatientSchema>;
 

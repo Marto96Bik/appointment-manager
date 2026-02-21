@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { logger } from "../../../lib/logger";
+import { logger } from "@/lib/logger";
 import { AppError } from "../core/errors/appCustomError";
 import { ZodError } from "zod";
 import { verifySession } from "../auth/auth.service";
 import { getCalendarEvents } from "./calendar.service";
-import { getCalendarSchema } from "./calendar.dto";
+import { getCalendarSchema } from "@/app/api/calendar/calendar.schema";
 
 export async function GET(req: NextRequest) {
   try {

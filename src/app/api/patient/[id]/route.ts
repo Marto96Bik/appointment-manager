@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { logger } from "../../../../lib/logger";
+import { logger } from "@/lib/logger";
 import { ZodError } from "zod";
 import { AppError } from "../../core/errors/appCustomError";
-import { patchPatientSchema } from "../patient.dto";
+import { patchPatientSchema } from "@/shared/schemas/patient.schema";
 import { deletePatient, updatePatient, getPatientById } from "../patient.service";
 import { verifySession } from "../../auth/auth.service";
 

@@ -1,5 +1,5 @@
-import { CreatePatientDTO, getPatientDTO, patchPatientDTO } from "./patient.dto";
-import { inMemoryStore } from "../../../lib/inMemoryStore";
+import { CreatePatientDTO, getPatientDTO, patchPatientDTO } from "@/shared/schemas/patient.schema";
+import { inMemoryStore } from "@/lib/inMemoryStore";
 import { AppError } from "../core/errors/appCustomError";
 import { Patient } from "./patient.model";
 

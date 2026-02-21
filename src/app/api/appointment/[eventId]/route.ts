@@ -4,10 +4,10 @@ import {
   getAppointmentByEventId,
   updateAppointment,
 } from "../appointment.service";
-import { logger } from "../../../../lib/logger";
+import { logger } from "@/lib/logger";
 import { ZodError } from "zod";
 import { AppError } from "../../core/errors/appCustomError";
-import { patchAppointmentSchema } from "../appointment.dto";
+import { patchAppointmentSchema } from "@/shared/schemas/appointment.schema";
 import { verifySession } from "../../auth/auth.service";
 
 export async function GET(req: NextRequest, context: { params: Promise<{ eventId: string }> }) {

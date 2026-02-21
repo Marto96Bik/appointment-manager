@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createPatient, getPatientsList } from "./patient.service";
-import { createPatientSchema, getPatientSchema } from "./patient.dto";
-import { logger } from "../../../lib/logger";
+import { createPatientSchema, getPatientSchema } from "@/shared/schemas/patient.schema";
+import { logger } from "@/lib/logger";
 import { AppError } from "../core/errors/appCustomError";
 import { ZodError } from "zod";
 import { verifySession } from "../auth/auth.service";

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAppointment, getAppointments } from "./appointment.service";
-import { createAppointmentSchema, getAppointmentSchema } from "./appointment.dto";
-import { logger } from "../../../lib/logger";
+import { createAppointmentSchema, getAppointmentSchema } from "@/shared/schemas/appointment.schema";
+import { logger } from "@/lib/logger";
 import { AppError } from "../core/errors/appCustomError";
 import { ZodError } from "zod";
 import { verifySession } from "../auth/auth.service";
