@@ -10,7 +10,7 @@ export const createPatientSchema = z.object({
 export const getPatientSchema = z.object({
   id: z.coerce.number().positive().optional(),
   name: z.string().min(1).optional(),
-  lastname: z.string().min(1).optional(),
+  lastName: z.string().min(1).optional(),
   phone: z.string().min(1).optional(),
   documentId: z.string().min(1).optional(),
 });
@@ -18,11 +18,11 @@ export const getPatientSchema = z.object({
 export const patchPatientSchema = z.object({
   id: z.coerce.number().positive().optional(),
   name: z.string().min(1).optional(),
-  lastname: z.string().min(1).optional(),
+  lastName: z.string().min(1).optional(),
   phone: z.string().min(1).optional(),
   documentId: z.string().min(1).optional(),
 });
 
-export type CreatePatientDto = z.infer<typeof createPatientSchema>;
-export type getPatientDto = z.infer<typeof getPatientSchema>;
-export type patchPatientDto = z.infer<typeof patchPatientSchema>;
+export type CreatePatientDTO = z.infer<typeof createPatientSchema>;
+export type getPatientDTO = z.infer<typeof getPatientSchema>;
+export type patchPatientDTO = z.infer<typeof patchPatientSchema>;

@@ -1,11 +1,10 @@
-import { AppError } from "@/app/api/core/errors/appCustomError";
+import { AppError } from "../app/api/core/errors/appCustomError";
 import { calendar_v3, google } from "googleapis";
 
 export class GoogleCalendarClient {
   private calendar;
 
-  constructor() {
-    // refresh_token auth
+  constructor(refreshToken: string) {
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
@@ -13,7 +12,7 @@ export class GoogleCalendarClient {
     );
 
     oauth2Client.setCredentials({
-      refresh_token: process.env.REFRESH_TOKEN,
+      refresh_token: refreshToken,
     });
 
     this.calendar = new calendar_v3.Calendar({ auth: oauth2Client });

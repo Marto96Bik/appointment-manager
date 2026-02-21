@@ -1,50 +1,54 @@
-import { CreatePatientDto, getPatientDto, patchPatientDto } from "./patient.dto";
+import { CreatePatientDTO, getPatientDTO, patchPatientDTO } from "./patient.dto";
 import { inMemoryStore } from "../../../lib/inMemoryStore";
 import { AppError } from "../core/errors/appCustomError";
 import { Patient } from "./patient.model";
 
-export function createPatient(data: CreatePatientDto) {
-  patientExists(data.documentId);
+export function createPatient(userId: number, data: CreatePatientDTO) {
+  patientExists(userId, data.documentId);
   const newPatient = {
     id: inMemoryStore.patients.length + 1,
     ...data,
+    userId: userId,
   };
   inMemoryStore.patients.push(newPatient);
   return newPatient;
 }
 
-export function getPatientById(id: number) {
-  const patient = inMemoryStore.patients.find((patient) => patient.id === id);
+export function getPatientById(userId: number, patientId: number) {
+  const patient = inMemoryStore.patients.find((p) => p.userId === userId && p.id === patientId);
+  if (!patient) {
+    throw new AppError("Patient not found", 404);
+  }
   return patient;
 }
 
-export function getPatientsList(filters: getPatientDto) {
-  const patient = inMemoryStore.patients.filter((patient) => {
+export function getPatientsList(userId: number, filters: getPatientDTO) {
+  // Filter by user
+  const userPatients = inMemoryStore.patients.filter((patient) => patient.userId === userId);
+
+  // Filter by params
+  const filteredPatients = userPatients.filter((patient) => {
     return (
       (!filters.id || patient.id === filters.id) &&
       (!filters.name || patient.name.toLowerCase().includes(filters.name.toLowerCase())) &&
-      (!filters.lastname ||
-        patient.lastname.toLowerCase().includes(filters.lastname.toLowerCase())) &&
+      (!filters.lastName ||
+        patient.lastname.toLowerCase().includes(filters.lastName.toLowerCase())) &&
       (!filters.phone || patient.phone === filters.phone) &&
       (!filters.documentId || patient.documentId === filters.documentId)
     );
   });
-  return patient;
+
+  return filteredPatients;
 }
 
-export function editPatient(patientId: number, data: patchPatientDto) {
-  const index = inMemoryStore.patients.findIndex((p) => p.id === patientId);
-
-  if (index === -1) {
-    throw new AppError("Patient not found", 404);
-  }
-
+export function updatePatient(userId: number, patientId: number, data: patchPatientDTO) {
+  const index = getIndexByPatientId(userId, patientId);
   const patient = inMemoryStore.patients[index];
 
   const updatedPatient: Patient = {
     ...patient,
     name: data.name ?? patient.name,
-    lastname: data.lastname ?? patient.lastname,
+    lastname: data.lastName ?? patient.lastname,
     phone: data.phone ?? patient.phone,
     documentId: data.documentId ?? patient.documentId,
   };
@@ -53,22 +57,23 @@ export function editPatient(patientId: number, data: patchPatientDto) {
   return updatedPatient;
 }
 
-export function deletePatient(patientId: number) {
+export function deletePatient(userId: number, patientId: number) {
   // TODO soft delete
-
-  const index = inMemoryStore.patients.findIndex((a) => a.id === patientId);
-
-  if (index === -1) {
-    throw new AppError("Patient not found", 404);
-  }
-
+  const index = getIndexByPatientId(userId, patientId);
   inMemoryStore.patients.splice(index, 1);
-
   return inMemoryStore.patients;
 }
 
-function patientExists(documentId: string) {
-  if (inMemoryStore.patients.some((patient) => patient.documentId === documentId)) {
+function patientExists(userId: number, documentId: string) {
+  if (inMemoryStore.patients.some((p) => p.userId === userId && p.documentId === documentId)) {
     throw new AppError("Patient already exists", 400);
   }
+}
+
+function getIndexByPatientId(userId: number, patientId: number) {
+  const index = inMemoryStore.patients.findIndex((p) => p.userId === userId && p.id === patientId);
+  if (index === -1) {
+    throw new AppError("Patient not found", 404);
+  }
+  return index;
 }

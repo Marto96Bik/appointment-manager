@@ -4,4 +4,5 @@ export interface Patient {
   lastname: string;
   phone: string;
   documentId: string;
+  userId: number;
 }
