@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     const user = sessionLogout(userId);
     const response = NextResponse.json({ message: "Logged out" });
 
-    response.cookies.set("token", "", {
+    response.cookies.set("jwt", "", {
       httpOnly: true,
       expires: new Date(0),
       path: "/",

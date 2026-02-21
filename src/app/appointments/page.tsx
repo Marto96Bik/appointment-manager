@@ -1,159 +1,90 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useRef } from "react";
 import Calendar from "../components/calendar";
 import { useAppointments } from "../hooks/useAppointments";
 import { PlusIcon } from "lucide-react";
-import "../globals.css";
 import { useRouter } from "next/navigation";
 
 export default function AppointmentsPage() {
   const calendarRef = useRef<any>(null);
-  const today = new Date();
-  const currentYear = today.getFullYear();
-  const currentMonth = today.getMonth(); // 0-11
-  const currentDay = today.getDate();
   const router = useRouter();
+  const [year, setYear] = useState(new Date().getFullYear());
 
-  // Estado de los dropdowns
-  const [year, setYear] = useState(currentYear);
-  const [month, setMonth] = useState(currentMonth);
-  const [day, setDay] = useState(currentDay);
+  const [range, setRange] = useState({
+    start: new Date().toISOString(),
+    end: new Date().toISOString(),
+  });
 
-  // Lista de días del mes dinámicos
-  const [daysInMonth, setDaysInMonth] = useState<number[]>([]);
+  const { data, isLoading } = useAppointments(range.start, range.end);
 
-  useEffect(() => {
-    const days = new Date(year, month + 1, 0).getDate(); // último día del mes
-    const dayArray = Array.from({ length: days }, (_, i) => i + 1);
-    setDaysInMonth(dayArray);
-
-    // Ajustar día si es mayor que los días del mes
-    if (day > days) setDay(days);
-  }, [year, month]);
-
-  // Formatear fecha para la API
-  const [selectedDate, setSelectedDate] = useState(
-    `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(currentDay).padStart(2, "0")}`,
-  );
-
-  // Agregar un flag para diferenciar origen
-  const [fromDropdown, setFromDropdown] = useState(false);
-
-  // Cada vez que cambian año/mes/día, actualizar selectedDate
-  useEffect(() => {
-    setSelectedDate(
-      `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
-    );
-    setFromDropdown(true);
-  }, [year, month, day]);
-
-  // Actualizar calendario
-  useEffect(() => {
+  const handleYearChange = (newYear: number) => {
+    setYear(newYear);
     if (calendarRef.current) {
-      calendarRef.current.getApi().gotoDate(selectedDate);
+      const api = calendarRef.current.getApi();
+      const currentDate = api.getDate();
+      const newDate = new Date(currentDate);
+      newDate.setFullYear(newYear);
+      api.gotoDate(newDate);
     }
-    setFromDropdown(true);
-  }, [selectedDate, fromDropdown]);
+  };
 
-  // Ahora pasamos selectedDate al hook
-  const { data, isLoading } = useAppointments(selectedDate);
+  // Every time the calendar changes the visible range.
+  const handleDatesSet = (dateInfo: any) => {
+    setRange({
+      start: dateInfo.startStr,
+      end: dateInfo.endStr,
+    });
+  };
 
-  if (isLoading) return <div className="p-4">Loading...</div>;
+  // This is called when a date is clicked.
+  // It can be a real event (with id) or a tentative one (id = "tentative")
+  const handleDateSelection = (startStr: string) => {
+    // FullCalendar sometimes sends startStr as null, we ignore those cases.
+    if (!startStr) return;
+
+    const [date, fullTime] = startStr.split("T");
+    // If there is no time (month view), we set it to 00:00
+    const time = fullTime ? fullTime.substring(0, 5) : "00:00";
+
+    router.push(`/appointments/create?date=${date}&time=${time}`);
+  };
+
+  const handleEventClick = (eventId: string) => {
+    // If it's the tentative event, we do nothing here.
+    // onDateClick already handles it through the Calendar component.
+    if (eventId === "tentative") return;
+
+    // Si es un evento real, vamos al detalle.
+    router.push(`/appointments/${eventId}`);
+  };
 
   const events =
     data?.map((event: any) => ({
       id: event.id,
-      title: event.summary || "Sin título", // Google usa 'summary'
-      // Google entrega objetos para start y end, necesitamos el string de la fecha
+      title: event.summary || "Sin título",
       start: event.start?.dateTime || event.start?.date,
       end: event.end?.dateTime || event.end?.date,
-      // Opcional: puedes pasarle más datos si los necesitas en el onEventClick
-      extendedProps: {
-        description: event.description,
-        status: event.status,
-      },
+      allDay: !event.start?.dateTime,
     })) ?? [];
-
-  // Crear años para el dropdown (últimos 5 años y 2 años futuros)
-  const years = Array.from({ length: 10 }, (_, i) => currentYear - 5 + i); // TODO improve
 
   return (
     <div className="p-4">
-      {/* Dropdowns */}
-      <div className="mb-4 flex items-center gap-2">
-        <label className="font-medium">Año:</label>
-        <select
-          value={year}
-          onChange={(e) => setYear(Number(e.target.value))}
-          className="border rounded px-2 py-1"
-        >
-          {years.map((y) => (
-            <option key={y} value={y}>
-              {y}
-            </option>
-          ))}
-        </select>
-
-        <label className="font-medium">Mes:</label>
-        <select
-          value={month}
-          onChange={(e) => setMonth(Number(e.target.value))}
-          className="border rounded px-2 py-1"
-        >
-          {Array.from({ length: 12 }, (_, i) => i).map((m) => (
-            <option key={m} value={m}>
-              {new Date(0, m).toLocaleString("es-AR", { month: "long" })}
-            </option>
-          ))}
-        </select>
-
-        <label className="font-medium">Día:</label>
-        <select
-          value={day}
-          onChange={(e) => setDay(Number(e.target.value))}
-          className="border rounded px-2 py-1"
-        >
-          {daysInMonth.map((d) => (
-            <option key={d} value={d}>
-              {d}
-            </option>
-          ))}
-        </select>
-      </div>
-
       <Calendar
-        ref={calendarRef} // <- esto es clave
+        ref={calendarRef}
         events={events}
-        onDateChange={(date) => {
-          if (!fromDropdown) {
-            const dt = new Date(date);
-            setYear(dt.getFullYear());
-            setMonth(dt.getMonth());
-            setDay(dt.getDate());
-          }
-        }}
-        onEventClick={(event) => {
-          console.log("Clicked:", event.id);
-        }}
+        currentYear={year}
+        onYearChange={handleYearChange}
+        onDateClick={handleDateSelection}
+        onEventClick={handleEventClick}
+        onDatesSet={handleDatesSet}
       />
-      {/* Floating Button */}
+
       <button
         onClick={() => router.push("/appointments/create")}
-        className="
-        fixed bottom-20 left-1/2 -translate-x-1/2
-        z-50
-        flex items-center gap-2
-        px-4 py-4
-        rounded-2xl
-        bg-blue-600 hover:bg-blue-700
-        text-white font-medium
-        shadow-lg
-        transition active:scale-95
-        "
+        className="fixed bottom-10 right-10 z-50 flex items-center gap-2 px-6 py-4 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-2xl transition active:scale-95"
       >
-        <PlusIcon size={20} />
-        Crear Appointment
+        <PlusIcon size={24} />
       </button>
     </div>
   );

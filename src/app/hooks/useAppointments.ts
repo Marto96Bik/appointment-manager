@@ -1,17 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
-export function useAppointments(date: string) {
+export function useAppointments(start: string, end: string) {
   return useQuery({
-    // queryKey changes with date. Every time the dropdown changes, React Query will automatically fetch new data.
-    queryKey: ["calendar-events", date],
+    queryKey: ["calendar-events", start, end],
     queryFn: async () => {
       const { data } = await api.get("/calendar", {
-        params: { date },
+        params: { start, end },
       });
       return data;
     },
-    // Maintains old data while loading the new data
     placeholderData: (previousData) => previousData,
   });
 }

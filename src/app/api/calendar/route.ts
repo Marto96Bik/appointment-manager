@@ -10,9 +10,9 @@ export async function GET(req: NextRequest) {
   try {
     const userId = await verifySession(req);
     const params = Object.fromEntries(req.nextUrl.searchParams);
-    const { date } = getCalendarSchema.parse(params); // Validate input data
+    const { start, end } = getCalendarSchema.parse(params); // Validate input data
 
-    const events = await getCalendarEvents(userId, date);
+    const events = await getCalendarEvents(userId, start, end);
     return NextResponse.json(events, { status: 200 });
   } catch (e) {
     logger.error(e);
