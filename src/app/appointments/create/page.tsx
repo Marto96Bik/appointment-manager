@@ -210,7 +210,10 @@ export default function CreateAppointmentPage() {
               router.push("/appointments");
             }}
           >
-            <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div
+              className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-200"
+              onClick={(e) => e.stopPropagation()} // Evita que el click en el modal cierre el modal
+            >
               <div className="flex flex-col items-center text-center">
                 <div className="bg-amber-100 p-3 rounded-full mb-4">
                   <svg
