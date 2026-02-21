@@ -1,22 +1,51 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { z } from "zod";
-import { createPatientSchema } from "@/app/api/patient/patient.dto";
+import { patchPatientSchema } from "@/app/api/patient/patient.dto";
 
-type PatientForm = z.infer<typeof createPatientSchema>;
+type PatientForm = z.infer<typeof patchPatientSchema>;
 
-export default function CreatePatientPage() {
+export default function EditPatientPage() {
+  const router = useRouter();
+  const params = useParams();
+  const id = params.id as string;
+
   const [form, setForm] = useState<PatientForm>({
     name: "",
     lastname: "",
     phone: "",
     documentId: "",
   });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const router = useRouter();
+
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchPatient = async () => {
+      const res = await fetch(`/api/patient/${id}`, {
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        setError("Error cargando al paciente");
+        return;
+      }
+
+      const data = await res.json();
+      setForm({
+        name: data.name,
+        lastname: data.lastname,
+        phone: data.phone,
+        documentId: data.documentId || "",
+      });
+    };
+
+    fetchPatient();
+  }, [id]);
 
   // Lógica para el prefijo telefónico (estilo Uiverse)
   const [prefix, setPrefix] = useState("+972"); // Valor por defecto
@@ -69,11 +98,12 @@ export default function CreatePatientPage() {
     setError("");
 
     try {
-      createPatientSchema.parse(form); // valida con Zod
+      patchPatientSchema.parse(form);
 
       setLoading(true);
-      const res = await fetch("/api/patient", {
-        method: "POST",
+
+      const res = await fetch(`/api/patient/${params.id}`, {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
@@ -232,7 +262,7 @@ export default function CreatePatientPage() {
               Creando...
             </span>
           ) : (
-            "Crear Paciente"
+            "Guardar Cambios"
           )}
         </button>
       </form>

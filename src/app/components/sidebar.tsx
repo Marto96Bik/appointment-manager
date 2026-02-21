@@ -9,6 +9,7 @@ export default function Sidebar() {
 
   return (
     <>
+      <div className="h-16" /> {/* espacio fijo para el botón */}
       {/* Botón hamburguesa, solo visible si el sidebar está cerrado */}
       {!open && (
         <button
@@ -18,7 +19,6 @@ export default function Sidebar() {
           &#9776; {/* Tres barras */}
         </button>
       )}
-
       {/* Sidebar deslizante */}
       <div
         className={`fixed top-0 left-0 h-full w-64 bg-white shadow transform transition-transform duration-300 z-40 ${
@@ -34,7 +34,7 @@ export default function Sidebar() {
               setOpen(false);
             }}
           >
-            Inicio
+            Turnos
           </button>
           <button
             className="text-left px-4 py-2 rounded hover:bg-gray-100"
@@ -43,7 +43,7 @@ export default function Sidebar() {
               setOpen(false);
             }}
           >
-            Clientes
+            Pacientes
           </button>
         </div>
 
@@ -51,16 +51,26 @@ export default function Sidebar() {
         <div className="p-6 mt-auto">
           <button
             className="w-full text-left px-4 py-2 rounded hover:bg-red-100 text-red-600"
-            onClick={() => {
-              router.push("/logout");
-              setOpen(false);
+            onClick={async () => {
+              try {
+                const response = await fetch("/api/auth/logout", {
+                  method: "POST",
+                });
+
+                if (response.ok) {
+                  setOpen(false);
+                  router.refresh();
+                  router.push("/login");
+                }
+              } catch (error) {
+                console.error("Error al cerrar sesión:", error);
+              }
             }}
           >
             Logout
           </button>
         </div>
       </div>
-
       {/* Fondo semi-transparente al abrir, clic para cerrar */}
       {open && (
         <div

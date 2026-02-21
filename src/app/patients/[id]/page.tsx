@@ -7,7 +7,7 @@ import { patchPatientSchema } from "@/app/api/patient/patient.dto";
 
 type PatientForm = z.infer<typeof patchPatientSchema>;
 
-export default function EditPatientPage() {
+export default function InfoPatientPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
@@ -47,33 +47,8 @@ export default function EditPatientPage() {
     fetchPatient();
   }, [id]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-
-    try {
-      patchPatientSchema.parse(form);
-
-      setLoading(true);
-
-      const res = await fetch(`/api/patient/${params.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-
-      if (!res.ok) throw new Error("Error actualizando paciente");
-
-      router.push("/patients");
-    } catch (err: any) {
-      setError(err.message || "Datos inválidos");
-    } finally {
-      setLoading(false);
-    }
+  const handleUpdate = () => {
+    router.push(`/patients/edit/${id}`);
   };
 
   const handleDelete = async () => {
@@ -104,50 +79,86 @@ export default function EditPatientPage() {
   };
 
   return (
-    <div className="max-w-lg mx-auto mt-10 p-6 bg-white shadow rounded">
-      <h1 className="text-2xl font-bold mb-6">Editar Cliente</h1>
-      {error && <p className="text-red-600 mb-4">{error}</p>}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <input
-          name="name"
-          value={form.name}
-          onChange={handleChange}
-          className="border p-2 rounded"
-        />
-        <input
-          name="lastname"
-          value={form.lastname}
-          onChange={handleChange}
-          className="border p-2 rounded"
-        />
-        <input
-          name="phone"
-          value={form.phone}
-          onChange={handleChange}
-          className="border p-2 rounded"
-        />
-        <input
-          name="documentId"
-          value={form.documentId}
-          onChange={handleChange}
-          className="border p-2 rounded"
-        />
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="bg-blue-600 text-white p-2 rounded disabled:opacity-50"
-        >
-          {loading ? "Guardando..." : "Guardar Cambios"}
-        </button>
-      </form>
-      <div className="h-2" /> {/* espacio fijo para el botón */}
-      <button
-        className="w-full bg-red-50 text-red-600 hover:bg-red-100 font-semibold p-2 rounded-md border border-red-200 transition-all"
-        onClick={handleDelete}
-      >
-        Eliminar cliente
-      </button>
+    <div className="bg-white shadow-sm border border-slate-200 rounded-xl p-6 max-w-md mx-auto">
+      <h2 className="text-2xl text-center font-semibold text-slate-800 mb-5">
+        Informacion del Paciente
+      </h2>
+      <div className="space-y-5">
+        {/* Fullname */}
+        <div className="flex flex-col border-b border-slate-100 pb-2">
+          <p className="text-xl text-slate-800 font-medium">
+            {form.name} {form.lastname}
+          </p>
+        </div>
+        {/* Cellphone */}
+        <div className="flex flex-col border-b border-slate-100 pb-2">
+          <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+            Teléfono de Contacto
+          </span>
+          <p className="text-slate-700">{form.phone || "No especificado"}</p>
+        </div>
+        {/* Document */}
+        <div className="flex flex-col border-b border-slate-100 pb-2">
+          <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+            Número de Documento
+          </span>
+          <p className="text-slate-700 font-mono">{form.documentId || "No especificado"}</p>
+        </div>
+        {/* Notifications Langague of preference */}
+        <div className="flex flex-col border-b border-slate-100 pb-2">
+          <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+            Idioma de notoficaciones
+          </span>
+          <p className="text-slate-700 font-mono">{form.phone || "No especificado"}</p>
+        </div>
+        <div className="h-2" /> {/* Space for a button */}
+        <div className="flex gap-4">
+          <div className="flex-1">
+            <button
+              className="w-full bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-semibold p-2.5 rounded-lg border border-indigo-200 transition-all flex items-center justify-center gap-2"
+              onClick={handleUpdate}
+            >
+              <svg
+                xmlns="http://www.w3.org"
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                />
+              </svg>
+              Editar
+            </button>
+          </div>
+          <div className="flex-1">
+            <button
+              className="w-full bg-red-50 text-red-600 hover:bg-red-100 font-semibold p-2.5 rounded-lg border border-red-200 transition-all flex items-center justify-center gap-2"
+              onClick={handleDelete}
+            >
+              <svg
+                xmlns="http://www.w3.org"
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                />
+              </svg>
+              Eliminar
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

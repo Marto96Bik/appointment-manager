@@ -1,3 +1,6 @@
 import { z } from "zod";
-export const getCalendarSchema = z.object({ date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) });
+export const getCalendarSchema = z.object({
+  start: z.string().datetime({ offset: true }),
+  end: z.string().datetime({ offset: true }),
+});
 export type GetCalendarDTO = z.infer<typeof getCalendarSchema>;

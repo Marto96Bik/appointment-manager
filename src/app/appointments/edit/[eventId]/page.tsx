@@ -1,8 +1,18 @@
 "use client";
 
-import { useEffect, useState, useMemo, useRef } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { Suspense } from "react";
+import { set } from "zod";
+
+type Appointment = {
+  id: number;
+  start: string;
+  end: string;
+  eventId: string;
+  patientId: number;
+  userId: number;
+};
 
 type Patient = {
   id: number;
@@ -13,17 +23,40 @@ type Patient = {
   userId: number;
 };
 
+async function fetchAppointment(eventId: string): Promise<Appointment> {
+  const res = await fetch(`/api/appointment/${eventId}`);
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    if (data && data.message === "Appointment not found") {
+      throw new Error("Este evento no corresponde a un turno del sistema.");
+    }
+    throw new Error(data?.message || "Failed to fetch data");
+  }
+
+  return data as Appointment;
+}
+
+async function fetchPatient(id: number): Promise<Patient> {
+  const res = await fetch(`/api/patient/${id}`);
+  if (!res.ok) throw new Error("Failed to fetch patient");
+  return res.json();
+}
+
 async function fetchPatients(): Promise<Patient[]> {
   const res = await fetch("/api/patient");
   if (!res.ok) throw new Error("Failed to fetch patients");
   return res.json();
 }
 
-export default function CreateAppointmentPage() {
+export default function EditAppointmentPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const params = useParams();
+  const eventId = params.eventId as string;
 
-  // Estados separados
+  const [appointment, setAppointment] = useState<Appointment | null>(null);
+  const [patient, setPatient] = useState<Patient | null>(null);
+
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [duration, setDuration] = useState("30"); // en minutos
@@ -31,9 +64,59 @@ export default function CreateAppointmentPage() {
   const [patientId, setPatientId] = useState(1);
   const [patients, setPatients] = useState<Patient[]>([]);
 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const apt = await fetchAppointment(eventId);
+        setAppointment(apt);
+        setDate(apt.start.split("T")[0]);
+        setTime(apt.start.split("T")[1].substring(0, 5));
+        const aptDuration = (new Date(apt.end).getTime() - new Date(apt.start).getTime()) / 60000;
+        setDuration("custom");
+        setCustomDuration(aptDuration.toString());
+        const pat = await fetchPatient(apt.patientId);
+        setPatient(pat);
+        const patients = await fetchPatients();
+        setPatients(patients);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (eventId) {
+      loadData();
+    }
+  }, [eventId]);
+
+  if (loading) {
+    return <div>Loader</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow text-red-600">
+        Error: {error}
+      </div>
+    );
+  }
+
+  if (!appointment || !patient) {
+    return (
+      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
+        Appointment not found
+      </div>
+    );
+  }
+
   // Lógica para obtener la duración final (predefinida o custom)
   const finalDuration = duration === "custom" ? Number(customDuration) : Number(duration);
 
+  // Submit handler for updating the appointment
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -42,17 +125,15 @@ export default function CreateAppointmentPage() {
       return;
     }
 
-    // Crear objeto Date de inicio
+    // Determine start & end datetimes
     const startDateTime = new Date(`${date}T${time}`);
-
-    // Calcular fin sumando la duración
     const endDateTime = new Date(startDateTime.getTime() + finalDuration * 60000);
 
-    // Formatear a ISO local o el formato que espera tu API (YYYY-MM-DDTHH:mm:ss)
+    // Format to ISO local string without timezone (e.g. "2024-06-30T14:30")
     const formatToISO = (d: Date) => d.toLocaleString("sv").replace(" ", "T");
 
-    const res = await fetch("/api/appointment", {
-      method: "POST",
+    const res = await fetch(`/api/appointment/${eventId}`, {
+      method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         start: formatToISO(startDateTime),
@@ -69,60 +150,10 @@ export default function CreateAppointmentPage() {
     }
   };
 
-  // recives dateTime params from URL and sets them in the form
-  useEffect(() => {
-    const dateParam = searchParams.get("date");
-    const timeParam = searchParams.get("time");
-
-    if (dateParam) {
-      setDate(dateParam);
-    }
-
-    if (timeParam) {
-      // FullCalendar a veces envía HH:mm:ss, el input type="time" solo acepta HH:mm
-      const formattedTime = timeParam.substring(0, 5);
-      setTime(formattedTime);
-    }
-  }, [searchParams]);
-
-  const [showNoPatientsModal, setShowNoPatientsModal] = useState(false);
-  const isFetching = useRef(false); // Ref para evitar doble ejecución
-
-  // Fetch patients for the dropdown
-  useEffect(() => {
-    if (isFetching.current) return;
-    isFetching.current = true;
-
-    const loadPatients = async () => {
-      try {
-        const res = await fetchPatients();
-        if (res && res.length > 0) {
-          setPatients(res);
-          setPatientId(res[0].id);
-        } else {
-          // En lugar de alert, mostramos el modal
-          setShowNoPatientsModal(true);
-        }
-      } catch (err: any) {
-        console.error("Error fetching patients:", err.message);
-        // Podrías mostrar un toast o error aquí
-      }
-    };
-
-    loadPatients();
-  }, []);
-
-  const handleNoPatients = () => {
-    setShowNoPatientsModal(false);
-    router.push("/patients/create");
-  };
-
-  const loading = "Cargando formulario...";
-
   return (
     <Suspense fallback={<div>{loading}</div>}>
       <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
-        <h1 className="text-xl font-bold mb-4">Asignar Turno</h1>
+        <h1 className="text-xl font-bold mb-4">Editar Turno</h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {/* Fecha y Hora Alineados */}
           <div className="flex gap-4">
@@ -196,51 +227,12 @@ export default function CreateAppointmentPage() {
 
           <button
             type="submit"
-            className="bg-blue-600 text-white px-4 py-2 mt-2 rounded hover:bg-blue-700 transition-colors"
+            disabled={loading}
+            className="bg-blue-600 text-white p-2 rounded disabled:opacity-50"
           >
-            Asignar Turno
+            {loading ? "Guardando..." : "Guardar Cambios"}
           </button>
         </form>
-        {/* MODAL DE ADVERTENCIA */}
-        {showNoPatientsModal && (
-          <div
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-            onClick={() => {
-              setShowNoPatientsModal(false);
-              router.push("/appointments");
-            }}
-          >
-            <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-200">
-              <div className="flex flex-col items-center text-center">
-                <div className="bg-amber-100 p-3 rounded-full mb-4">
-                  <svg
-                    className="w-8 h-8 text-amber-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                    />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">No tienes pacientes</h3>
-                <p className="text-gray-600 mb-6">
-                  Para crear un turno, primero debes dar de alta al menos un paciente en el sistema.
-                </p>
-                <button
-                  onClick={handleNoPatients}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition active:scale-95 shadow-lg shadow-blue-200"
-                >
-                  Crear mi primer paciente
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </Suspense>
   );

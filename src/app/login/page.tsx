@@ -5,10 +5,16 @@ import React from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CalendarIcon, MailIcon, LockIcon, EyeIcon, EyeOffIcon } from "lucide-react";
+import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const msgWelcome = "Bienvenido!";
+  const msgDescription = "Administrador de turnos de pacientes";
+  const msgSingIn = "Iniciá sesión con Google";
+  const msgNoAccount = "¿No tenés cuenta?";
+  const msgCreateAccount = "Crear cuenta";
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -70,16 +76,16 @@ export default function LoginPage() {
           >
             <CalendarIcon style={{ width: "28px", height: "28px" }} />
           </div>
-          <h1 style={{ fontSize: "24px", fontWeight: "bold", color: "#0f172a", margin: "0 0 8px" }}>
-            Welcome Back
+          <h1
+            style={{ fontSize: "24px", fontWeight: "bold", color: "#0f172a", margin: "0 0 10px" }}
+          >
+            {msgWelcome}
           </h1>
-          <p style={{ fontSize: "14px", color: "#64748b", margin: 0 }}>
-            Sign in to manage your appointments
-          </p>
+          <p style={{ fontSize: "14px", color: "#64748b", margin: 0 }}>{msgDescription}</p>
         </div>
 
         {/* Google Button */}
-        <div style={{ padding: "0 32px 32px" }}>
+        <div style={{ padding: "0px 50px 0px" }}>
           <button
             onClick={handleSubmit}
             disabled={loading}
@@ -92,7 +98,7 @@ export default function LoginPage() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: "12px",
+              gap: "10px",
               cursor: loading ? "not-allowed" : "pointer",
               transition: "background-color 0.2s",
             }}
@@ -116,7 +122,7 @@ export default function LoginPage() {
               />
             </svg>
             <span style={{ fontWeight: "600", color: "#334155" }}>
-              {loading ? "Signing in..." : "Sign in with Google"}
+              {loading ? "Signing in..." : msgSingIn}
             </span>
           </button>
         </div>
@@ -125,14 +131,17 @@ export default function LoginPage() {
           style={{
             marginTop: "auto",
             borderTop: "1px solid #f1f5f9",
-            padding: "24px",
+            padding: "25px",
             backgroundColor: "#f8fafc",
             textAlign: "center",
           }}
         >
-          <p style={{ fontSize: "14px", color: "#64748b", margin: 0 }}>
-            New to the platform?{" "}
-            <span style={{ color: "#135bec", fontWeight: "bold" }}>Create account</span>
+          <p style={{ fontSize: "14px", color: "#64748b", margin: "0px 0px 15px" }}>
+            {msgNoAccount}
+            {"  "}
+            <button style={{ color: "#135bec", fontWeight: "bold" }} onClick={handleSubmit}>
+              {msgCreateAccount}
+            </button>
           </p>
         </div>
       </div>

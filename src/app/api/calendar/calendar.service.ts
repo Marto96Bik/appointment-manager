@@ -2,15 +2,11 @@ import { GoogleCalendarClient } from "@/integrations/google-calendar.client";
 import { AppError } from "../core/errors/appCustomError";
 import { findUserByUserId } from "../user/user.service";
 
-export async function getCalendarEvents(userId: number, date: string) {
+export async function getCalendarEvents(userId: number, start: string, end: string) {
   const calendarClient = getCalendarClient(userId);
 
-  const dateFrom = new Date(date);
-  dateFrom.setHours(0, 0, 0, 0);
-
-  const dateUntil = new Date(date);
-  dateUntil.setDate(dateUntil.getDate() + 1);
-  dateUntil.setHours(0, 0, 0, 0);
+  const dateFrom = new Date(start);
+  const dateUntil = new Date(end);
 
   return await calendarClient.listEvents(dateFrom, dateUntil);
 }
