@@ -1,4 +1,5 @@
-import { google } from "googleapis";
+import { AppError } from "@/app/api/core/errors/appCustomError";
+import { calendar_v3, google } from "googleapis";
 
 export class GoogleCalendarClient {
   private calendar;
@@ -15,7 +16,7 @@ export class GoogleCalendarClient {
       refresh_token: process.env.REFRESH_TOKEN,
     });
 
-    this.calendar = google.calendar({ version: "v3", auth: oauth2Client });
+    this.calendar = new calendar_v3.Calendar({ auth: oauth2Client });
   }
 
   async listEvents(fromDate: Date, maxResults?: number) {
@@ -47,6 +48,54 @@ export class GoogleCalendarClient {
         },
       },
     });
+
+    if (res.status !== 200 || res.data.status === "cancelled") {
+      throw new AppError("Google Calendar did not update event", 409);
+    }
+
     return await res.data;
+  }
+
+  async editEvent(eventId: string, data: { name?: string; start?: string; end?: string }) {
+    const res = await this.calendar.events.patch({
+      calendarId: "primary",
+      eventId,
+      sendUpdates: "all",
+      requestBody: {
+        ...(data.name && { summary: data.name }),
+        ...(data.start && {
+          start: {
+            dateTime: data.start,
+            timeZone: "Asia/Jerusalem",
+          },
+        }),
+        ...(data.end && {
+          end: {
+            dateTime: data.end,
+            timeZone: "Asia/Jerusalem",
+          },
+        }),
+      },
+    });
+
+    if (res.status !== 200 || res.data.status === "cancelled") {
+      throw new AppError("Google Calendar did not update event", 409);
+    }
+
+    return res.data;
+  }
+
+  async deleteEvent(eventId: string) {
+    const res = await this.calendar.events.delete({
+      calendarId: "primary",
+      eventId,
+      sendUpdates: "all",
+    });
+
+    if (res.status !== 204) {
+      throw new Error("Google Calendar delete failed");
+    }
+
+    return res.data;
   }
 }

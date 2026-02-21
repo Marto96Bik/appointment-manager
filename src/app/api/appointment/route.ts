@@ -1,13 +1,13 @@
-import { NextResponse } from "next/server";
-import { createAppointment, getAllAppointments } from "./appointment.service";
-import { createAppointmentSchema } from "./appointent.dto";
+import { NextRequest, NextResponse } from "next/server";
+import { createAppointment, getAppointments } from "./appointment.service";
+import { createAppointmentSchema, getAppointmentSchema } from "./appointment.dto";
 import { logger } from "@/lib/logger";
 import { AppError } from "../core/errors/appCustomError";
 import { ZodError } from "zod";
 
-export async function POST(req: Request) {
-  const data = await req.json();
+export async function POST(req: NextRequest) {
   try {
+    const data = await req.json();
     createAppointmentSchema.parse(data); // Validation of input data
     const appointment = await createAppointment(data);
     return NextResponse.json(appointment, { status: 201 });
@@ -32,7 +32,16 @@ export async function POST(req: Request) {
   }
 }
 
-export async function GET() {
-  const appointments = await getAllAppointments();
-  return NextResponse.json(appointments);
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+
+  const rawParams = {
+    startDate: searchParams.get("startDate") ?? undefined,
+    patientId: searchParams.get("patientId") ?? undefined,
+  };
+
+  const params = getAppointmentSchema.parse(rawParams);
+
+  const appointments = await getAppointments(params);
+  return NextResponse.json(appointments, { status: 200 });
 }
