@@ -1,3 +1,4 @@
+
 import { CreateAppointmentDTO, GetAppointmentDTO, PatchAppointmentDTO } from "./appointment.dto";
 import { inMemoryStore } from "../../../lib/inMemoryStore";
 import { GoogleCalendarClient } from "../../../integrations/google-calendar.client";
@@ -49,11 +50,6 @@ export async function getAppointments(userId: number, params: GetAppointmentDTO)
 
     return true;
   });
-}
-
-export async function getCalendarEvents(userId: number, dateStart: Date, maxResults: number) {
-  const calendarClient = getCalendarClient(userId);
-  return await calendarClient.listEvents(dateStart, maxResults);
 }
 
 export async function getAppointmentByEventId(userId: number, id: string) {

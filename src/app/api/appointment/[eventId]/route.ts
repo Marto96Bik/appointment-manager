@@ -18,7 +18,6 @@ export async function GET(req: NextRequest, context: { params: Promise<{ eventId
     const appointment = await getAppointmentByEventId(userId, eventId);
     return NextResponse.json(appointment, { status: 200 });
   } catch (e) {
-    console.log(e);
     logger.error(e);
 
     if (e instanceof ZodError) {
@@ -49,7 +48,6 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ event
     const appointment = await updateAppointment(userId, eventId, data);
     return NextResponse.json(appointment, { status: 200 });
   } catch (e) {
-    console.log(e);
     logger.error(e);
 
     if (e instanceof ZodError) {
@@ -77,7 +75,6 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ even
     const appointment = await deleteAppointment(userId, eventId);
     return NextResponse.json(appointment, { status: 200 });
   } catch (e) {
-    console.log(e);
     logger.error(e);
 
     if (e instanceof ZodError) {

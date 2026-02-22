@@ -9,10 +9,16 @@ import { verifySession } from "../auth/auth.service";
 export async function GET(req: NextRequest) {
   try {
     const userId = await verifySession(req);
-    const params = Object.fromEntries(req.nextUrl.searchParams);
-    const filters = getAppointmentSchema.parse(params); // Validate input data
+    const { searchParams } = new URL(req.url);
 
-    const appointments = await getAppointments(userId, filters);
+    const rawParams = {
+      startDate: searchParams.get("startDate") ?? undefined,
+      patientId: searchParams.get("patientId") ?? undefined,
+    };
+
+    const params = getAppointmentSchema.parse(rawParams); // Validate input data
+
+    const appointments = await getAppointments(userId, params);
     return NextResponse.json(appointments, { status: 200 });
   } catch (e) {
     logger.error(e);

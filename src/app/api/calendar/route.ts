@@ -1,23 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sessionLogout, verifySession } from "../auth.service";
-import { logger } from "../../../../lib/logger";
+import { logger } from "../../../lib/logger";
+import { AppError } from "../core/errors/appCustomError";
 import { ZodError } from "zod";
-import { AppError } from "../../core/errors/appCustomError";
+import { verifySession } from "../auth/auth.service";
+import { getCalendarEvents } from "./calendar.service";
+import { getCalendarSchema } from "./calendar.dto";
 
-export async function POST(req: NextRequest) {
+export async function GET(req: NextRequest) {
   try {
     const userId = await verifySession(req);
-    const user = sessionLogout(userId);
-    const response = NextResponse.json({ message: "Logged out" });
+    const params = Object.fromEntries(req.nextUrl.searchParams);
+    const { start, end } = getCalendarSchema.parse(params); // Validate input data
 
-    response.cookies.set("jwt", "", {
-      httpOnly: true,
-      expires: new Date(0),
-      path: "/",
-    });
-
-    //return NextResponse.json(user, { status: 200 });
-    return response;
+    const events = await getCalendarEvents(userId, start, end);
+    return NextResponse.json(events, { status: 200 });
   } catch (e) {
     logger.error(e);
 
