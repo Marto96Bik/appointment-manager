@@ -52,6 +52,16 @@ export async function GET(req: NextRequest) {
     { expiresIn: "7d" },
   );
 
-  // Redirect to Frontend: return NextResponse.redirect("http://localhost:3000/dashboard");
-  return NextResponse.json({ accessToken, expiresIn: "7d" }, { status: 200 });
+  //return NextResponse.json({ accessToken, expiresIn: "7d" }, { status: 200 });
+  const response = NextResponse.redirect("http://localhost:3000/");
+
+  response.cookies.set("jwt", accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 7, // 7 días
+  });
+
+  return response;
 }
