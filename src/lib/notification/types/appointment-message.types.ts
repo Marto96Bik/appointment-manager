@@ -1,4 +1,4 @@
-export type NotificationType = "create" | "update" | "delete";
+export type NotificationType = "create" | "update" | "delete" | "reminder";
 
 export type AppointmentMessageData = {
   patientName: string;

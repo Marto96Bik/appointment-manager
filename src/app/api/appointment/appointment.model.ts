@@ -5,4 +5,5 @@ export interface Appointment {
   eventId: string;
   patientId: number;
   userId: number;
+  reminderSent: boolean;
 }

@@ -35,6 +35,7 @@ export async function createAppointment(userId: number, data: CreateAppointmentD
     eventId: event.id,
     patientId: data.patientId,
     userId,
+    reminderSent: false,
   };
   inMemoryStore.appointments.push(newAppointment);
 
@@ -131,4 +132,26 @@ function getIndexByEventId(userId: number, eventId: string) {
     throw new AppError("Appointment not found", 404);
   }
   return index;
+}
+
+export async function findAppointmentsToRemind() {
+  console.log("Running reminder check...");
+  const now = new Date();
+  const from = new Date(now.getTime() + 2 * 60 * 1000);
+  const to = new Date(from.getTime() + 60 * 1000); // ventana 1 min (porque corre cada minuto)
+
+  const appointmentsToRemind = inMemoryStore.appointments.filter((a) => {
+    const start = new Date(a.start);
+    return start >= from && start <= to && !a.reminderSent;
+  });
+
+  return appointmentsToRemind;
+}
+
+export async function markReminderSent(id: number) {
+  const index = inMemoryStore.appointments.findIndex((a) => a.id === id);
+  if (index === -1) {
+    throw new AppError("Appointment not found", 404);
+  }
+  inMemoryStore.appointments[index].reminderSent = true;
 }
