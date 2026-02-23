@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { createPatientSchema } from "@/shared/schemas/patient.schema";
+import { COUNTRY_LIMITS } from "@/shared/phone/phone.config";
+import { buildPhone } from "@/shared/phone/phone.utils";
 
 type PatientForm = z.infer<typeof createPatientSchema>;
 
@@ -30,16 +32,8 @@ export default function CreatePatientPage() {
     } else {
       setIsCustomPrefix(false);
       setPrefix(val);
+      setForm((prev) => ({ ...prev, phone: "" })); // limpiar número al cambiar
     }
-  };
-
-  const countryLimits: Record<string, number> = {
-    "+972": 9, // Israel (ej. 50 266 9713 -> 9 dígitos)
-    "+34": 9, // España
-    "+1": 10, // US
-    "+52": 10, // México
-    "+54": 10, // Argentina (sin el 9 inicial de móvil para la API)
-    custom: 15, // Límite internacional máximo
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,7 +49,8 @@ export default function CreatePatientPage() {
       }
 
       // 3. Aplicar límite de longitud según el prefijo actual
-      const limit = countryLimits[prefix] || 15;
+      const activePrefix = isCustomPrefix ? "custom" : prefix;
+      const limit = COUNTRY_LIMITS[activePrefix] || 15;
       if (val.length <= limit) {
         setForm({ ...form, [name]: val });
       }
@@ -68,27 +63,36 @@ export default function CreatePatientPage() {
     e.preventDefault();
     setError("");
 
-    try {
-      createPatientSchema.parse(form); // valida con Zod
+    if (!form.name || !form.lastname || !form.phone || !form.documentId) {
+      setError("Completa todos los campos antes de guardar");
+      return;
+    }
 
+    try {
+      const fullPhone = buildPhone(isCustomPrefix ? customPrefix : prefix, form.phone);
+      const payload = { ...form, phone: fullPhone };
+
+      createPatientSchema.parse(payload); // valida con Zod
       setLoading(true);
+
       const res = await fetch("/api/patient", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
 
+      // Response handling for known errors
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({})); // Evita error si no es JSON
-
+        const errorData = await res.json().catch(() => ({}));
         if (errorData.message === "Patient already exists") {
-          throw new Error("Ya existe un paciente con este documento");
+          setError("Ya existe un paciente con este documento");
+        } else {
+          setError("Error actualizando paciente");
         }
-
-        throw new Error("Error creando paciente");
+        return;
       }
 
-      // redirige a listado de pacientes
+      // Redirects after successful update
       router.push("/patients");
     } catch (err: any) {
       if (err instanceof z.ZodError) {
@@ -152,10 +156,7 @@ export default function CreatePatientPage() {
               {!isCustomPrefix ? (
                 <select
                   value={prefix}
-                  onChange={(e) => {
-                    setPrefix(e.target.value);
-                    setForm({ ...form, phone: "" }); // Limpiamos el número al cambiar de país
-                  }}
+                  onChange={handlePrefixChange}
                   className="text-xs outline-none rounded-lg h-full bg-transparent cursor-pointer font-bold text-blue-600"
                 >
                   <option value="+972">IL +972</option>
@@ -169,7 +170,10 @@ export default function CreatePatientPage() {
                 <input
                   type="text"
                   value={customPrefix}
-                  onChange={(e) => setCustomPrefix(e.target.value)}
+                  onChange={(e) => {
+                    setCustomPrefix(e.target.value);
+                    setForm((prev) => ({ ...prev, phone: "" })); // limpia el número al cambiar custom
+                  }}
                   className="w-10 text-xs font-bold text-blue-600 outline-none bg-transparent"
                 />
               )}
