@@ -135,16 +135,17 @@ function getIndexByEventId(userId: number, eventId: string) {
 }
 
 export async function findAppointmentsToRemind() {
-  console.log("Running reminder check...");
+  console.log("FILE VERSION 2 - LOADED");
+  console.log("Checking appointments...");
   const now = new Date();
-  const from = new Date(now.getTime() + 2 * 60 * 1000);
-  const to = new Date(from.getTime() + 60 * 1000); // ventana 1 min (porque corre cada minuto)
+  const to = new Date(now.getTime() + 60 * 1000); // ventana 1 min (porque corre cada minuto)
 
   const appointmentsToRemind = inMemoryStore.appointments.filter((a) => {
     const start = new Date(a.start);
-    return start >= from && start <= to && !a.reminderSent;
+    return start >= now && start <= to && !a.reminderSent;
   });
-
+  console.log("llegue");
+  console.log(inMemoryStore.appointments.length);
   return appointmentsToRemind;
 }
 

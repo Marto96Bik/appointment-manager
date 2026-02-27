@@ -7,7 +7,6 @@ export class TwilioClient {
   }
 
   async sendMessage(fromNumber: string, toNumber: string, message: string) {
-    console.log(`Sending message`);
     return await this.client.messages.create({
       from: `whatsapp:${fromNumber}`,
       to: `whatsapp:${toNumber}`,

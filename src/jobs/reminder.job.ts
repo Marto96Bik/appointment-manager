@@ -1,5 +1,4 @@
-import { getPatientById } from "../app/api/patient/patient.service";
-import { AppError } from "../app/api/core/errors/appCustomError";
+import { getPatientById } from "@/app/api/patient/patient.service";
 import {
   findAppointmentsToRemind,
   markReminderSent,
@@ -7,17 +6,18 @@ import {
 import { sendNotification } from "@/lib/notification/notification.service";
 
 export async function runReminderJob() {
-  console.log("Running reminder job...");
+  console.log("Running reminder job...", new Date().toISOString());
 
   const appointments = await findAppointmentsToRemind();
 
   for (const appointment of appointments) {
-    try {
-      const patient = getPatientById(appointment.userId, appointment.patientId);
-      await sendNotification(patient!, appointment, "reminder");
-      await markReminderSent(appointment.id);
-    } catch (error) {
-      throw new AppError("Error sending reminder", 400);
-    }
+    const patient = await getPatientById(appointment.userId, appointment.patientId);
+
+    console.log("Sending notification to:", patient?.name);
+
+    await sendNotification(patient!, appointment, "reminder");
+    await markReminderSent(appointment.id);
   }
+
+  console.log("Reminder job finished");
 }

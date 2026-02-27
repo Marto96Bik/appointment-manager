@@ -5,8 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "worker": "tsx src/worker/index.ts"
+    "start": "next start"
   },
   "dependencies": {
     "@fullcalendar/daygrid": "^6.1.20",
@@ -22,7 +21,6 @@
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.563.0",
     "next": "^16.1.6",
-    "node-cron": "^4.2.1",
     "pino": "^10.1.0",
     "swr": "^2.4.0",
     "twilio": "^5.11.2",
