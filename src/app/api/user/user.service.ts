@@ -11,8 +11,6 @@ export function createUser(data: CreateUserDto) {
   const newUser = {
     id: inMemoryStore.users.length + 1,
     ...data,
-    createdAt: new Date(),
-    updatedAt: new Date(),
   };
 
   inMemoryStore.users.push(newUser);
@@ -47,7 +45,6 @@ export function updateUser(userId: number, data: UpdateUserDto) {
     lastname: data.lastname ?? user.lastname,
     email: data.email ?? user.email,
     phone: data.phone ?? user.phone,
-    updatedAt: new Date(),
   };
   inMemoryStore.users[index] = updatedUser;
   return updatedUser;
