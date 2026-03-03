@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
-import prisma from "@/lib/prisma"; // Node runtime, no Edge
 import { findUserByGoogleId } from "./app/api/user/user.service";
-import { unknown } from "zod";
 
 const secret = new TextEncoder().encode(process.env.SESSION_SECRET!);
 const protectedRoutes = ["/appointments", "/account", "/patients"];
@@ -42,9 +40,7 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL("/appointments", req.url));
     }
   } catch {
-    const response = NextResponse.redirect(new URL("/login", req.url));
-    response.cookies.delete("jwt");
-    return response;
+    return redirectToLogin(req);
   }
 
   return NextResponse.next();

@@ -7,4 +7,9 @@ export interface User {
   googleId: string;
   sid: string;
   refreshToken: string;
+<<<<<<< HEAD
+=======
+  createdAt: Date;
+  updatedAt: Date;
+>>>>>>> origin/dev
 }

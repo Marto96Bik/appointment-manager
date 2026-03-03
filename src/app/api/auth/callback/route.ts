@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
+<<<<<<< HEAD
 import { SignJWT } from "jose";
 import { createUser, findUserByGoogleId } from "../../user/user.service";
 import { oauth2Client } from "../auth.client";
 import prisma from "@/lib/prisma";
 
 const secret = new TextEncoder().encode(process.env.SESSION_SECRET!);
+=======
+import jwt from "jsonwebtoken";
+import { createUser, findUserByGoogleId } from "../../user/user.service";
+import { randomUUID } from "crypto";
+import { oauth2Client } from "../auth.client";
+>>>>>>> origin/dev
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
