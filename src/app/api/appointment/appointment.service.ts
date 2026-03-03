@@ -13,7 +13,7 @@ import { findUserByUserId } from "../user/user.service";
 
 export async function createAppointment(userId: number, data: CreateAppointmentDTO) {
   const patient = getPatientById(userId, data.patientId);
-  const calendarClient = getCalendarClient(userId);
+  const calendarClient = await getCalendarClient(userId);
   const message = `New appointment with ${patient?.name} ${patient?.lastname} `;
 
   // New event in google calendar
@@ -87,7 +87,7 @@ export async function updateAppointment(
   inMemoryStore.appointments[index] = updatedAppointment;
 
   // Google Calendar update
-  const calendarClient = getCalendarClient(userId);
+  const calendarClient = await getCalendarClient(userId);
   await calendarClient.editEvent(eventId, {
     start: data.start,
     end: data.end,
@@ -108,7 +108,7 @@ export async function deleteAppointment(userId: number, eventId: string) {
   inMemoryStore.appointments.splice(index, 1);
 
   // Google Calendar Delete
-  const calendarClient = getCalendarClient(userId);
+  const calendarClient = await getCalendarClient(userId);
   await calendarClient.deleteEvent(eventId);
 
   // Send custom notification
@@ -116,8 +116,11 @@ export async function deleteAppointment(userId: number, eventId: string) {
   return inMemoryStore.appointments;
 }
 
-function getCalendarClient(userId: number) {
-  const user = findUserByUserId(userId);
+async function getCalendarClient(userId: number) {
+  const user = await findUserByUserId(userId);
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
   if (!user.refreshToken) {
     throw new AppError("Google not linked", 400);
   }

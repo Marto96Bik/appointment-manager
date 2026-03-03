@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
+import { SignJWT } from "jose";
 import { createUser, findUserByGoogleId } from "../../user/user.service";
-import { randomUUID } from "crypto";
 import { oauth2Client } from "../auth.client";
+import prisma from "@/lib/prisma";
+
+const secret = new TextEncoder().encode(process.env.SESSION_SECRET!);
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -23,7 +25,7 @@ export async function GET(req: NextRequest) {
 
   // Check user
   let user = await findUserByGoogleId(userData.sub);
-  const sid = randomUUID();
+  const sid = crypto.randomUUID();
 
   if (!user) {
     user = await createUser({
@@ -36,21 +38,22 @@ export async function GET(req: NextRequest) {
       refreshToken: tokens.refresh_token!,
     });
   } else {
-    user.sid = sid;
-    if (tokens.refresh_token) {
-      user.refreshToken = tokens.refresh_token;
-    }
-    user.refreshToken = tokens.refresh_token!;
+    user = await prisma.user.update({
+      where: { googleId: user.googleId },
+      data: {
+        sid,
+        refreshToken: tokens.refresh_token ?? user.refreshToken,
+      },
+    });
   }
   // Generate JWT
-  const accessToken = jwt.sign(
-    {
-      googleId: user.googleId,
-      sid,
-    },
-    process.env.SESSION_SECRET!,
-    { expiresIn: "7d" },
-  );
+  const accessToken = await new SignJWT({
+    googleId: user.googleId,
+    sid,
+  })
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime("7d")
+    .sign(secret);
 
   //return NextResponse.json({ accessToken, expiresIn: "7d" }, { status: 200 });
   const response = NextResponse.redirect("http://localhost:3000/");

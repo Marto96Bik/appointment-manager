@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
+// TODO: refactor this page, it's too big and has too much logic, split it into smaller components and hooks
 type Patient = {
   id: number;
   name: string;
@@ -23,15 +24,72 @@ export default function CreateAppointmentPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Estados separados
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  if (loading) {
+    return <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">Cargando...</div>;
+  }
+
+  if (error) {
+    return <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">Error: {error}</div>;
+  }
+
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [duration, setDuration] = useState("30"); // en minutos
   const [customDuration, setCustomDuration] = useState("");
   const [patientId, setPatientId] = useState(1);
   const [patients, setPatients] = useState<Patient[]>([]);
+  const [showNoPatientsModal, setShowNoPatientsModal] = useState(false);
 
-  // Lógica para obtener la duración final (predefinida o custom)
+  // Fetch patients for the dropdown
+  useEffect(() => {
+    const loadPatients = async () => {
+      try {
+        const res = await fetchPatients();
+        setError("");
+
+        if (res && res.length > 0) {
+          setPatients(res);
+          setPatientId(res[0].id);
+        } else {
+          // En lugar de alert, mostramos el modal
+          setShowNoPatientsModal(true);
+        }
+      } catch (err: any) {
+        setError(err.message || "No se pudo eliminar el registro");
+        // Podrías mostrar un toast o error aquí
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPatients();
+  }, []);
+
+  const handleNoPatients = () => {
+    setShowNoPatientsModal(false);
+    router.push("/patients/create");
+  };
+
+  // recives dateTime params from URL and sets them in the form
+  useEffect(() => {
+    const dateParam = searchParams.get("date");
+    const timeParam = searchParams.get("time");
+
+    if (dateParam) {
+      setDate(dateParam);
+    }
+
+    if (timeParam) {
+      // FullCalendar sometimes sends HH:mm:ss, the input type="time" only accepts HH:mm, so we need to format it
+      const formattedTime = timeParam.substring(0, 5);
+      setTime(formattedTime);
+    }
+  }, [searchParams]);
+
+  // Logic to get the final duration (predefined or custom)
   const finalDuration = duration === "custom" ? Number(customDuration) : Number(duration);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,13 +100,10 @@ export default function CreateAppointmentPage() {
       return;
     }
 
-    // Crear objeto Date de inicio
     const startDateTime = new Date(`${date}T${time}`);
-
-    // Calcular fin sumando la duración
     const endDateTime = new Date(startDateTime.getTime() + finalDuration * 60000);
 
-    // Formatear a ISO local o el formato que espera tu API (YYYY-MM-DDTHH:mm:ss)
+    // Format to local ISO type date string without timezone (e.g., 2024-06-30T14:30:00)
     const formatToISO = (d: Date) => d.toLocaleString("sv").replace(" ", "T");
 
     const res = await fetch("/api/appointment", {
@@ -69,62 +124,12 @@ export default function CreateAppointmentPage() {
     }
   };
 
-  // recives dateTime params from URL and sets them in the form
-  useEffect(() => {
-    const dateParam = searchParams.get("date");
-    const timeParam = searchParams.get("time");
-
-    if (dateParam) {
-      setDate(dateParam);
-    }
-
-    if (timeParam) {
-      // FullCalendar a veces envía HH:mm:ss, el input type="time" solo acepta HH:mm
-      const formattedTime = timeParam.substring(0, 5);
-      setTime(formattedTime);
-    }
-  }, [searchParams]);
-
-  const [showNoPatientsModal, setShowNoPatientsModal] = useState(false);
-  const isFetching = useRef(false); // Ref para evitar doble ejecución
-
-  // Fetch patients for the dropdown
-  useEffect(() => {
-    if (isFetching.current) return;
-    isFetching.current = true;
-
-    const loadPatients = async () => {
-      try {
-        const res = await fetchPatients();
-        if (res && res.length > 0) {
-          setPatients(res);
-          setPatientId(res[0].id);
-        } else {
-          // En lugar de alert, mostramos el modal
-          setShowNoPatientsModal(true);
-        }
-      } catch (err: any) {
-        console.error("Error fetching patients:", err.message);
-        // Podrías mostrar un toast o error aquí
-      }
-    };
-
-    loadPatients();
-  }, []);
-
-  const handleNoPatients = () => {
-    setShowNoPatientsModal(false);
-    router.push("/patients/create");
-  };
-
-  const loading = "Cargando formulario...";
-
   return (
     <Suspense fallback={<div>{loading}</div>}>
       <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
         <h1 className="text-xl font-bold mb-4">Asignar Turno</h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* Fecha y Hora Alineados */}
+          {/* Date & Time */}
           <div className="flex gap-4">
             <div className="flex-1">
               <label className="block text-sm font-medium">Fecha</label>
@@ -148,7 +153,7 @@ export default function CreateAppointmentPage() {
             </div>
           </div>
 
-          {/* Duración */}
+          {/* Duration */}
           <div className="flex gap-4 items-end">
             <div className="flex-1">
               <label className="block text-sm font-medium">Duración</label>
@@ -201,7 +206,8 @@ export default function CreateAppointmentPage() {
             Asignar Turno
           </button>
         </form>
-        {/* MODAL DE ADVERTENCIA */}
+
+        {/* Advert Modal */}
         {showNoPatientsModal && (
           <div
             className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"

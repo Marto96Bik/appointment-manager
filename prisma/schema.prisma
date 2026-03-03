@@ -18,8 +18,8 @@ model User {
   name         String
   lastname     String
   email        String    @unique
-  phone        String?
-  googleId     String
+  phone        String?   @unique
+  googleId     String    @unique
   sid          String?
   refreshToken String?
   createdAt    DateTime  @default(now())
@@ -34,7 +34,7 @@ model Patient {
   name       String
   lastname   String
   phone      String
-  documentId String
+  documentId String    @unique
   userId     Int
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
@@ -47,7 +47,7 @@ model Appointment {
   id           Int      @id @default(autoincrement())
   start        DateTime
   end          DateTime
-  eventId      String
+  eventId      String    @unique
   patientId    Int
   userId       Int
   reminderSent Boolean   @default(false)
