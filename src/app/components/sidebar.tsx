@@ -7,6 +7,17 @@ export default function Sidebar() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  if (loading) {
+    return <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">Cargando...</div>;
+  }
+
+  if (error) {
+    return <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">Error: {error}</div>;
+  }
+
   return (
     <>
       <div className="h-16" /> {/* espacio fijo para el botón */}
@@ -27,6 +38,15 @@ export default function Sidebar() {
       >
         <div className="p-6 flex flex-col gap-4">
           <h2 className="text-2xl font-bold mb-6">Appointment Manager</h2>
+          <button
+            className="text-left px-4 py-2 rounded hover:bg-gray-100"
+            onClick={() => {
+              router.push("/account");
+              setOpen(false);
+            }}
+          >
+            Mi cuenta
+          </button>
           <button
             className="text-left px-4 py-2 rounded hover:bg-gray-100"
             onClick={() => {
@@ -63,7 +83,7 @@ export default function Sidebar() {
                   router.push("/login");
                 }
               } catch (error) {
-                console.error("Error al cerrar sesión:", error);
+                setError("Error al cerrar sesión. Intenta de nuevo.");
               }
             }}
           >
