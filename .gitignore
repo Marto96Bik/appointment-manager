@@ -1,5 +1,8 @@
-# Carpetas locales personales / pruebas
+# Local development files
 previo/
+
+# Local config files
+.vscode/
 
 # dependencies
 /node_modules
