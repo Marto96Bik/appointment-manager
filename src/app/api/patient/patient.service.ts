@@ -1,5 +1,5 @@
-import { CreatePatientDTO, getPatientDTO, patchPatientDTO } from "./patient.dto";
-import { inMemoryStore } from "../../../lib/inMemoryStore";
+import { CreatePatientDTO, getPatientDTO, patchPatientDTO } from "@/shared/schemas/patient.schema";
+import { inMemoryStore } from "@/lib/inMemoryStore";
 import { AppError } from "../core/errors/appCustomError";
 import { Patient } from "./patient.model";
 
@@ -29,10 +29,9 @@ export function getPatientsList(userId: number, filters: getPatientDTO) {
   // Filter by params
   const filteredPatients = userPatients.filter((patient) => {
     return (
-      (!filters.id || patient.id === filters.id) &&
-      (!filters.name || patient.name.toLowerCase().includes(filters.name.toLowerCase())) &&
-      (!filters.lastName ||
-        patient.lastname.toLowerCase().includes(filters.lastName.toLowerCase())) &&
+      (!filters.name || patient.name?.toLowerCase().includes(filters.name.toLowerCase())) &&
+      (!filters.lastname ||
+        patient.lastname?.toLowerCase().includes(filters.lastname.toLowerCase())) &&
       (!filters.phone || patient.phone === filters.phone) &&
       (!filters.documentId || patient.documentId === filters.documentId)
     );
@@ -48,7 +47,7 @@ export function updatePatient(userId: number, patientId: number, data: patchPati
   const updatedPatient: Patient = {
     ...patient,
     name: data.name ?? patient.name,
-    lastname: data.lastName ?? patient.lastname,
+    lastname: data.lastname ?? patient.lastname,
     phone: data.phone ?? patient.phone,
     documentId: data.documentId ?? patient.documentId,
   };

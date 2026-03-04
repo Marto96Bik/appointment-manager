@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { logger } from "../../../../lib/logger";
+import { logger } from "@/lib/logger";
 import { ZodError } from "zod";
 import { AppError } from "../../core/errors/appCustomError";
-import { patchPatientSchema } from "../patient.dto";
+import { patchPatientSchema } from "@/shared/schemas/patient.schema";
 import { deletePatient, updatePatient, getPatientById } from "../patient.service";
 import { verifySession } from "../../auth/auth.service";
 
@@ -15,7 +15,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     const patient = await getPatientById(userId, patientId);
     return NextResponse.json(patient, { status: 200 });
   } catch (e) {
-    console.log(e);
     logger.error(e);
 
     if (e instanceof ZodError) {
@@ -48,7 +47,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const patient = await updatePatient(userId, patientId, data);
     return NextResponse.json(patient, { status: 200 });
   } catch (e) {
-    console.log(e);
     logger.error(e);
 
     if (e instanceof ZodError) {
@@ -78,7 +76,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     const patient = await deletePatient(userId, patientId);
     return NextResponse.json(patient, { status: 200 });
   } catch (e) {
-    console.log(e);
     logger.error(e);
 
     if (e instanceof ZodError) {

@@ -3,7 +3,7 @@ import { AppError } from "../core/errors/appCustomError";
 import { findUserByUserId } from "../user/user.service";
 
 export async function getCalendarEvents(userId: number, start: string, end: string) {
-  const calendarClient = getCalendarClient(userId);
+  const calendarClient = await getCalendarClient(userId);
 
   const dateFrom = new Date(start);
   const dateUntil = new Date(end);
@@ -11,8 +11,11 @@ export async function getCalendarEvents(userId: number, start: string, end: stri
   return await calendarClient.listEvents(dateFrom, dateUntil);
 }
 
-function getCalendarClient(userId: number) {
-  const user = findUserByUserId(userId);
+async function getCalendarClient(userId: number) {
+  const user = await findUserByUserId(userId);
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
   if (!user.refreshToken) {
     throw new AppError("Google not linked", 400);
   }

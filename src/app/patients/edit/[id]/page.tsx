@@ -3,7 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { z } from "zod";
-import { patchPatientSchema } from "@/app/api/patient/patient.dto";
+import { patchPatientSchema } from "@/shared/schemas/patient.schema";
+import { COUNTRY_LIMITS, KNOWN_PREFIXES } from "@/shared/phone/phone.config";
+import { buildPhone, splitPhone } from "@/shared/phone/phone.utils";
 
 type PatientForm = z.infer<typeof patchPatientSchema>;
 
@@ -12,15 +14,21 @@ export default function EditPatientPage() {
   const params = useParams();
   const id = params.id as string;
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  // States for phone prefix handling
+  const [isCustomPrefix, setIsCustomPrefix] = useState(false);
+  const [customPrefix, setCustomPrefix] = useState("+");
+  type KnownPrefix = (typeof KNOWN_PREFIXES)[number] | "custom";
+  const [prefix, setPrefix] = useState<KnownPrefix>("+972");
+
   const [form, setForm] = useState<PatientForm>({
     name: "",
     lastname: "",
     phone: "",
     documentId: "",
   });
-
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!id) return;
@@ -36,39 +44,40 @@ export default function EditPatientPage() {
       }
 
       const data = await res.json();
+      // Split prefix and local number for form handling
+      const { prefix: detectedPrefix, localNumber, isCustom } = splitPhone(data.phone);
+
       setForm({
         name: data.name,
         lastname: data.lastname,
-        phone: data.phone,
-        documentId: data.documentId || "",
+        phone: localNumber,
+        documentId: data.documentId,
       });
+
+      if (isCustom) {
+        setIsCustomPrefix(true);
+        setCustomPrefix(detectedPrefix);
+        setPrefix("+972"); // default fallback number
+      } else {
+        setIsCustomPrefix(false);
+        setPrefix(detectedPrefix as KnownPrefix);
+        setCustomPrefix("+"); // Custom input reset
+      }
     };
 
     fetchPatient();
   }, [id]);
 
-  // Lógica para el prefijo telefónico (estilo Uiverse)
-  const [prefix, setPrefix] = useState("+972"); // Valor por defecto
-  const [isCustomPrefix, setIsCustomPrefix] = useState(false);
-  const [customPrefix, setCustomPrefix] = useState("+");
-
   const handlePrefixChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const val = e.target.value;
+    const val = e.target.value as KnownPrefix;
     if (val === "custom") {
       setIsCustomPrefix(true);
+      setForm((prev) => ({ ...prev, phone: "" }));
     } else {
       setIsCustomPrefix(false);
       setPrefix(val);
+      setForm((prev) => ({ ...prev, phone: "" }));
     }
-  };
-
-  const countryLimits: Record<string, number> = {
-    "+972": 9, // Israel (ej. 50 266 9713 -> 9 dígitos)
-    "+34": 9, // España
-    "+1": 10, // US
-    "+52": 10, // México
-    "+54": 10, // Argentina (sin el 9 inicial de móvil para la API)
-    custom: 15, // Límite internacional máximo
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,7 +93,8 @@ export default function EditPatientPage() {
       }
 
       // 3. Aplicar límite de longitud según el prefijo actual
-      const limit = countryLimits[prefix] || 15;
+      const activePrefix = isCustomPrefix ? "custom" : prefix;
+      const limit = COUNTRY_LIMITS[activePrefix] || 15;
       if (val.length <= limit) {
         setForm({ ...form, [name]: val });
       }
@@ -97,32 +107,32 @@ export default function EditPatientPage() {
     e.preventDefault();
     setError("");
 
+    if (!form.name || !form.lastname || !form.phone || !form.documentId) {
+      setError("Completa todos los campos antes de guardar");
+      return;
+    }
+
     try {
-      patchPatientSchema.parse(form);
+      const fullPhone = buildPhone(isCustomPrefix ? customPrefix : prefix, form.phone);
+      const payload = { ...form, phone: fullPhone };
+
+      patchPatientSchema.parse(payload);
 
       setLoading(true);
 
       const res = await fetch(`/api/patient/${params.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
 
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({})); // Evita error si no es JSON
+      if (!res.ok) throw new Error("Error actualizando datos");
 
-        if (errorData.message === "Patient already exists") {
-          throw new Error("Ya existe un paciente con este documento");
-        }
-
-        throw new Error("Error creando paciente");
-      }
-
-      // redirige a listado de pacientes
+      // Redirects after successful update
       router.push("/patients");
     } catch (err: any) {
       if (err instanceof z.ZodError) {
-        setError("Por favor, revisa los datos del formulario");
+        setError("Revisa los datos ingresados");
       } else {
         setError(err.message || "Ocurrió un error inesperado");
       }
@@ -182,10 +192,7 @@ export default function EditPatientPage() {
               {!isCustomPrefix ? (
                 <select
                   value={prefix}
-                  onChange={(e) => {
-                    setPrefix(e.target.value);
-                    setForm({ ...form, phone: "" }); // Limpiamos el número al cambiar de país
-                  }}
+                  onChange={handlePrefixChange} // <- acá usamos la función central
                   className="text-xs outline-none rounded-lg h-full bg-transparent cursor-pointer font-bold text-blue-600"
                 >
                   <option value="+972">IL +972</option>
@@ -199,7 +206,10 @@ export default function EditPatientPage() {
                 <input
                   type="text"
                   value={customPrefix}
-                  onChange={(e) => setCustomPrefix(e.target.value)}
+                  onChange={(e) => {
+                    setCustomPrefix(e.target.value);
+                    setForm((prev) => ({ ...prev, phone: "" })); // limpia el número si cambia custom
+                  }}
                   className="w-10 text-xs font-bold text-blue-600 outline-none bg-transparent"
                 />
               )}
