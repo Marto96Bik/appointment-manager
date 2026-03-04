@@ -29,7 +29,7 @@ export default function EditAccountPage() {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const res = await fetch("/api/user/me", {
+      const res = await fetch("/api/user", {
         credentials: "include",
       });
 
@@ -113,7 +113,7 @@ export default function EditAccountPage() {
 
       setLoading(true);
 
-      const res = await fetch("/api/user/me", {
+      const res = await fetch("/api/user", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

@@ -12,7 +12,7 @@ export default function AccountPage() {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const res = await fetch("/api/user/me", {
+      const res = await fetch("/api/user", {
         credentials: "include",
       });
 
@@ -45,7 +45,7 @@ export default function AccountPage() {
       setLoading(true);
       setError("");
       router.push("/login");
-      const res = await fetch("/api/user/me", {
+      const res = await fetch("/api/user", {
         method: "DELETE",
         credentials: "include",
       });

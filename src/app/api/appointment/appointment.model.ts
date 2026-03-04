@@ -5,8 +5,5 @@ export interface Appointment {
   eventId: string;
   patientId: number;
   userId: number;
-<<<<<<< HEAD
   reminderSent: boolean;
-=======
->>>>>>> origin/dev
 }
