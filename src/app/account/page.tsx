@@ -44,15 +44,13 @@ export default function AccountPage() {
     try {
       setLoading(true);
       setError("");
-
+      router.push("/login");
       const res = await fetch("/api/user/me", {
         method: "DELETE",
         credentials: "include",
       });
 
       if (!res.ok) throw new Error("Error eliminando la cuenta");
-
-      router.push("/login");
     } catch (err: any) {
       setError(err.message || "No se pudo eliminar la cuenta");
     } finally {

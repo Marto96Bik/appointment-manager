@@ -126,22 +126,13 @@ export default function EditPatientPage() {
         body: JSON.stringify(payload),
       });
 
-      // Response handling for known errors
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        if (errorData.message === "Patient already exists") {
-          setError("Ya existe un paciente con este documento");
-        } else {
-          setError("Error actualizando paciente");
-        }
-        return;
-      }
+      if (!res.ok) throw new Error("Error actualizando datos");
 
       // Redirects after successful update
       router.push("/patients");
     } catch (err: any) {
       if (err instanceof z.ZodError) {
-        setError("Por favor, revisa los datos del formulario");
+        setError("Revisa los datos ingresados");
       } else {
         setError(err.message || "Ocurrió un error inesperado");
       }

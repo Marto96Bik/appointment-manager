@@ -50,8 +50,8 @@ const Calendar = forwardRef<FullCalendar | null, Props>(
     };
 
     return (
-      <div className="calendar-container w-full bg-white rounded-xl shadow-sm border p-2 sm:p-4">
-        <div className="flex justify-end mb-4 items-center gap-2">
+      <div className="calendar-container w-full bg-white rounded-xl shadow-sm border p-2 sm:p-4 h-[80vh] flex flex-col">
+        <div className="flex justify-end mb-4 items-center gap-2 shrink-0">
           <label className="text-xs font-bold uppercase text-gray-500">Año:</label>
           <select
             value={currentYear}
@@ -59,50 +59,60 @@ const Calendar = forwardRef<FullCalendar | null, Props>(
             className="border rounded-lg px-2 py-1 text-sm bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500"
           >
             {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 5 + i).map((y) => (
-              <option key={y} value={y}>{y}</option>
+              <option key={y} value={y}>
+                {y}
+              </option>
             ))}
           </select>
         </div>
-
-        <FullCalendar
-          ref={ref}
-          plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
-          initialView={isMobile ? "timeGridDay" : "timeGridWeek"}
-          locale={esLocale}
-          headerToolbar={{
-            left: "prev,next today",
-            center: "title",
-            right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
-          }}
-          firstDay={0}
-          height="auto"
-          slotMinTime="07:00:00"
-          slotDuration="00:30:00"
-          allDaySlot={false}
-          stickyHeaderDates={true}
-          expandRows={true}
-          handleWindowResize={true}
-          events={allEvents}
-          selectable={true}
-          unselectAuto={false}
-          select={handleSelect}
-          eventClick={(info) => {
-            if (info.event.id === "tentative") onDateClick(info.event.startStr);
-            else onEventClick?.(info.event.id);
-          }}
-          unselect={() => {
-            setTentativeEvent(null);
-            lastSelectedRef.current = null;
-          }}
-          datesSet={(dateInfo) => {
-            setTentativeEvent(null);
-            lastSelectedRef.current = null;
-            onDatesSet?.(dateInfo);
-          }}
-        />
+        <div className="flex-1 min-h-0">
+          <FullCalendar
+            ref={ref}
+            plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
+            initialView={isMobile ? "timeGridDay" : "timeGridWeek"}
+            locale={esLocale}
+            headerToolbar={{
+              left: "prev,next today",
+              center: "title",
+              right: "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
+            }}
+            firstDay={0}
+            height="100%"
+            contentHeight="auto"
+            dayMaxEvents={2}
+            scrollTime="09:00:00"
+            slotDuration="00:30:00"
+            slotLabelFormat={{
+              hour: "2-digit", // fuerza dos dígitos
+              minute: "2-digit", // siempre muestra los minutos
+              hour12: false, // 24h
+            }}
+            allDaySlot={false}
+            stickyHeaderDates={true}
+            expandRows={false}
+            handleWindowResize={true}
+            events={allEvents}
+            selectable={true}
+            unselectAuto={false}
+            select={handleSelect}
+            eventClick={(info) => {
+              if (info.event.id === "tentative") onDateClick(info.event.startStr);
+              else onEventClick?.(info.event.id);
+            }}
+            unselect={() => {
+              setTentativeEvent(null);
+              lastSelectedRef.current = null;
+            }}
+            datesSet={(dateInfo) => {
+              setTentativeEvent(null);
+              lastSelectedRef.current = null;
+              onDatesSet?.(dateInfo);
+            }}
+          />
+        </div>
       </div>
     );
-  }
+  },
 );
 
 Calendar.displayName = "Calendar";

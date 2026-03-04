@@ -116,7 +116,7 @@ export default function EditAccountPage() {
       const res = await fetch("/api/user/me", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) throw new Error("Error actualizando datos");
@@ -126,7 +126,7 @@ export default function EditAccountPage() {
       if (err instanceof z.ZodError) {
         setError("Revisa los datos ingresados");
       } else {
-        setError(err.message || "Error actualizando datos de usuario");
+        setError(err.message || "Ocurrió un error inesperado");
       }
     } finally {
       setLoading(false);
