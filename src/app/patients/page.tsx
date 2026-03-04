@@ -50,7 +50,7 @@ export default function PatientsPage() {
 
   return (
     <div className="p-4 max-w-2xl mx-auto pb-32">
-      <h1 className="text-2xl font-bold mb-6 text-slate-800">Clientes</h1>
+      <h1 className="text-2xl font-bold mb-6 text-slate-800">Pacientes</h1>
 
       {isLoading ? (
         <div className="text-slate-500 animate-pulse">Cargando pacientes...</div>

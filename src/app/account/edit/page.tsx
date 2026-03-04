@@ -1,44 +1,81 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
-import { createPatientSchema } from "@/shared/schemas/patient.schema";
-import { COUNTRY_LIMITS } from "@/shared/phone/phone.config";
-import { buildPhone } from "@/shared/phone/phone.utils";
+import { updateUserSchema } from "@/shared/schemas/user.schema";
+import { COUNTRY_LIMITS, KNOWN_PREFIXES } from "@/shared/phone/phone.config";
+import { buildPhone, splitPhone } from "@/shared/phone/phone.utils";
+type UserForm = z.infer<typeof updateUserSchema>;
 
-type PatientForm = z.infer<typeof createPatientSchema>;
-
-export default function CreatePatientPage() {
-  const [form, setForm] = useState<PatientForm>({
-    name: "",
-    lastname: "",
-    phone: "",
-    documentId: "",
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+export default function EditAccountPage() {
   const router = useRouter();
 
-  // Lógica para el prefijo telefónico (estilo Uiverse)
-  const [prefix, setPrefix] = useState("+972"); // Valor por defecto
+  const [form, setForm] = useState<UserForm>({
+    name: "",
+    lastname: "",
+    email: "",
+    phone: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  // States for phone prefix handling
   const [isCustomPrefix, setIsCustomPrefix] = useState(false);
   const [customPrefix, setCustomPrefix] = useState("+");
+  type KnownPrefix = (typeof KNOWN_PREFIXES)[number] | "custom";
+  const [prefix, setPrefix] = useState<KnownPrefix>("+972");
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const res = await fetch("/api/user/me", {
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        setError("Error cargando datos");
+        return;
+      }
+
+      const data = await res.json();
+      // Split prefix and local number for form handling
+      const { prefix: detectedPrefix, localNumber, isCustom } = splitPhone(data.phone);
+      setForm({
+        name: data.name,
+        lastname: data.lastname,
+        email: data.email,
+        phone: localNumber,
+      });
+
+      if (isCustom) {
+        setIsCustomPrefix(true);
+        setCustomPrefix(detectedPrefix);
+        setPrefix("+972"); // default fallback number
+      } else {
+        setIsCustomPrefix(false);
+        setPrefix(detectedPrefix as KnownPrefix);
+        setCustomPrefix("+"); // Custom input reset
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   const handlePrefixChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const val = e.target.value;
+    const val = e.target.value as KnownPrefix;
     if (val === "custom") {
       setIsCustomPrefix(true);
+      setForm((prev) => ({ ...prev, phone: "" }));
     } else {
       setIsCustomPrefix(false);
       setPrefix(val);
-      setForm((prev) => ({ ...prev, phone: "" })); // limpiar número al cambiar
+      setForm((prev) => ({ ...prev, phone: "" }));
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-
     if (name === "phone") {
       // 1. Solo permitir dígitos (elimina cualquier otro caracter al instante)
       let val = value.replace(/\D/g, "");
@@ -63,7 +100,7 @@ export default function CreatePatientPage() {
     e.preventDefault();
     setError("");
 
-    if (!form.name || !form.lastname || !form.phone || !form.documentId) {
+    if (!form.name || !form.lastname || !form.phone) {
       setError("Completa todos los campos antes de guardar");
       return;
     }
@@ -72,31 +109,22 @@ export default function CreatePatientPage() {
       const fullPhone = buildPhone(isCustomPrefix ? customPrefix : prefix, form.phone);
       const payload = { ...form, phone: fullPhone };
 
-      createPatientSchema.parse(payload); // valida con Zod
+      updateUserSchema.parse(payload);
+
       setLoading(true);
 
-      const res = await fetch("/api/patient", {
-        method: "POST",
+      const res = await fetch("/api/user/me", {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      // Response handling for known errors
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        if (errorData.message === "Patient already exists") {
-          setError("Ya existe un paciente con este documento");
-        } else {
-          setError("Error actualizando paciente");
-        }
-        return;
-      }
+      if (!res.ok) throw new Error("Error actualizando datos");
 
-      // Redirects after successful update
-      router.push("/patients");
+      router.push("/account");
     } catch (err: any) {
       if (err instanceof z.ZodError) {
-        setError("Por favor, revisa los datos del formulario");
+        setError("Revisa los datos ingresados");
       } else {
         setError(err.message || "Ocurrió un error inesperado");
       }
@@ -106,49 +134,50 @@ export default function CreatePatientPage() {
   };
 
   return (
-    <div className="max-w-xl mx-auto mt-10 p-8 bg-white shadow-xl rounded-2xl border border-gray-100 font-sans">
-      <h1 className="text-3xl font-extrabold mb-8 text-gray-800 tracking-tight">Crear Paciente</h1>
+    <div className="max-w-xl mx-auto mt-10 p-8 bg-white shadow-xl rounded-2xl border border-gray-100">
+      <h1 className="text-3xl font-extrabold mb-8 text-gray-800 tracking-tight">Editar Cuenta</h1>
 
       {error && (
-        <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6 text-sm font-medium border border-red-100 animate-pulse">
+        <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6 text-sm font-medium border border-red-100">
           {error}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-        {/* Campo: Nombre */}
-        <div className="w-full">
+        {/* Name */}
+        <div>
           <label className="text-gray-600 text-sm font-semibold ml-1">Nombre</label>
-          <div className="relative mt-2 text-gray-500">
-            <input
-              name="name"
-              type="text"
-              placeholder="Ej. Juan"
-              value={form.name}
-              onChange={handleChange}
-              className="w-full px-4 py-2.5 appearance-none bg-transparent outline-none border focus:border-blue-600 focus:ring-1 focus:ring-blue-100 shadow-sm rounded-lg transition-all"
-              required
-            />
-          </div>
+          <input
+            name="name"
+            value={form.name || ""}
+            onChange={handleChange}
+            className="w-full px-4 py-2.5 border rounded-lg focus:border-blue-600 focus:ring-1 focus:ring-blue-100"
+          />
         </div>
 
-        {/* Campo: Apellido */}
-        <div className="w-full">
+        {/* Lastname */}
+        <div>
           <label className="text-gray-600 text-sm font-semibold ml-1">Apellido</label>
-          <div className="relative mt-2 text-gray-500">
-            <input
-              name="lastname"
-              type="text"
-              placeholder="Ej. Pérez"
-              value={form.lastname}
-              onChange={handleChange}
-              className="w-full px-4 py-2.5 appearance-none bg-transparent outline-none border focus:border-blue-600 focus:ring-1 focus:ring-blue-100 shadow-sm rounded-lg transition-all"
-              required
-            />
-          </div>
+          <input
+            name="lastname"
+            value={form.lastname || ""}
+            onChange={handleChange}
+            className="w-full px-4 py-2.5 border rounded-lg focus:border-blue-600 focus:ring-1 focus:ring-blue-100"
+          />
         </div>
 
-        {/* Campo: Teléfono (Estilo Uiverse adaptado) */}
+        {/* Email */}
+        <div>
+          <label className="text-gray-600 text-sm font-semibold ml-1">Email</label>
+          <input
+            name="email"
+            value={form.email || ""}
+            disabled
+            className="w-full px-4 py-2.5 border rounded-lg bg-gray-100"
+          />
+        </div>
+
+        {/* Phone */}
         <div className="w-full">
           <label className="text-gray-600 text-sm font-semibold ml-1">Número de teléfono</label>
           <div className="relative mt-2 text-gray-500">
@@ -156,7 +185,7 @@ export default function CreatePatientPage() {
               {!isCustomPrefix ? (
                 <select
                   value={prefix}
-                  onChange={handlePrefixChange}
+                  onChange={handlePrefixChange} // <- acá usamos la función central
                   className="text-xs outline-none rounded-lg h-full bg-transparent cursor-pointer font-bold text-blue-600"
                 >
                   <option value="+972">IL +972</option>
@@ -172,7 +201,7 @@ export default function CreatePatientPage() {
                   value={customPrefix}
                   onChange={(e) => {
                     setCustomPrefix(e.target.value);
-                    setForm((prev) => ({ ...prev, phone: "" })); // limpia el número al cambiar custom
+                    setForm((prev) => ({ ...prev, phone: "" })); // limpia el número si cambia custom
                   }}
                   className="w-10 text-xs font-bold text-blue-600 outline-none bg-transparent"
                 />
@@ -192,21 +221,6 @@ export default function CreatePatientPage() {
           <p className="mt-1 text-[10px] text-gray-400 ml-1">
             * Ingrese el número directamente sin el "0" inicial.
           </p>
-        </div>
-
-        {/* Campo: Documento */}
-        <div className="w-full">
-          <label className="text-gray-600 text-sm font-semibold ml-1">Documento de Identidad</label>
-          <div className="relative mt-2 text-gray-500">
-            <input
-              name="documentId"
-              type="text"
-              placeholder="T.Z., DNI, NIE o Pasaporte"
-              value={form.documentId}
-              onChange={handleChange}
-              className="w-full px-4 py-2.5 appearance-none bg-transparent outline-none border focus:border-blue-600 focus:ring-1 focus:ring-blue-100 shadow-sm rounded-lg transition-all"
-            />
-          </div>
         </div>
 
         {/* Botón de Acción */}
@@ -236,7 +250,7 @@ export default function CreatePatientPage() {
               Creando...
             </span>
           ) : (
-            "Crear Paciente"
+            "Guardar Cambios"
           )}
         </button>
       </form>

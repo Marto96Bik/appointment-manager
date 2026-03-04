@@ -6,14 +6,6 @@ import { findUserByGoogleId, findUserByUserId } from "../user/user.service";
 const secret = new TextEncoder().encode(process.env.SESSION_SECRET!);
 
 export async function verifySession(req: NextRequest) {
-  /*
-  const authHeader = req.headers.get("authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      throw new AppError("Missing authorization token", 401);
-    }
-  const tokenAuth = authHeader.replace("Bearer ", "");
-  */
-
   const jwt = req.cookies.get("jwt")?.value;
 
   if (!jwt) {
@@ -27,7 +19,7 @@ export async function verifySession(req: NextRequest) {
     throw new AppError("Invalid or expired session", 401);
   }
 
-  const user = findUserByGoogleId(payload.googleId);
+  const user = await findUserByGoogleId(payload.googleId);
   if (!user) {
     throw new AppError("User not found", 404);
   }
@@ -40,7 +32,10 @@ export async function verifySession(req: NextRequest) {
 }
 
 export async function sessionLogout(userId: number) {
-  const user = findUserByUserId(userId);
+  const user = await findUserByUserId(userId);
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
   user.sid = "";
   return user;
 }

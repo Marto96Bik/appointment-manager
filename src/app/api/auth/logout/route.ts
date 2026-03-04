@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sessionLogout, verifySession } from "../auth.service";
-import { logger } from "../../../../lib/logger";
+import { logger } from "@/lib/logger";
 import { ZodError } from "zod";
 import { AppError } from "../../core/errors/appCustomError";
 

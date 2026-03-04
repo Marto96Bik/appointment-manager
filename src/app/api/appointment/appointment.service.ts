@@ -1,16 +1,32 @@
+<<<<<<< HEAD
+import {
+  CreateAppointmentDTO,
+  GetAppointmentDTO,
+  PatchAppointmentDTO,
+} from "@/shared/schemas/appointment.schema";
+import { inMemoryStore } from "@/lib/inMemoryStore";
+import { GoogleCalendarClient } from "@/integrations/google-calendar.client";
+import { getPatientById } from "../patient/patient.service";
+import { sendNotification } from "@/lib/notification/notification.service";
+=======
 
 import { CreateAppointmentDTO, GetAppointmentDTO, PatchAppointmentDTO } from "./appointment.dto";
 import { inMemoryStore } from "../../../lib/inMemoryStore";
 import { GoogleCalendarClient } from "../../../integrations/google-calendar.client";
 import { getPatientById } from "../patient/patient.service";
 import { sendNotification } from "../../../lib/notification/notification.service";
+>>>>>>> origin/dev
 import { AppError } from "../core/errors/appCustomError";
 import { Appointment } from "./appointment.model";
 import { findUserByUserId } from "../user/user.service";
 
 export async function createAppointment(userId: number, data: CreateAppointmentDTO) {
   const patient = getPatientById(userId, data.patientId);
+<<<<<<< HEAD
+  const calendarClient = await getCalendarClient(userId);
+=======
   const calendarClient = getCalendarClient(userId);
+>>>>>>> origin/dev
   const message = `New appointment with ${patient?.name} ${patient?.lastname} `;
 
   // New event in google calendar
@@ -32,6 +48,10 @@ export async function createAppointment(userId: number, data: CreateAppointmentD
     eventId: event.id,
     patientId: data.patientId,
     userId,
+<<<<<<< HEAD
+    reminderSent: false,
+=======
+>>>>>>> origin/dev
   };
   inMemoryStore.appointments.push(newAppointment);
 
@@ -83,7 +103,11 @@ export async function updateAppointment(
   inMemoryStore.appointments[index] = updatedAppointment;
 
   // Google Calendar update
+<<<<<<< HEAD
+  const calendarClient = await getCalendarClient(userId);
+=======
   const calendarClient = getCalendarClient(userId);
+>>>>>>> origin/dev
   await calendarClient.editEvent(eventId, {
     start: data.start,
     end: data.end,
@@ -104,7 +128,11 @@ export async function deleteAppointment(userId: number, eventId: string) {
   inMemoryStore.appointments.splice(index, 1);
 
   // Google Calendar Delete
+<<<<<<< HEAD
+  const calendarClient = await getCalendarClient(userId);
+=======
   const calendarClient = getCalendarClient(userId);
+>>>>>>> origin/dev
   await calendarClient.deleteEvent(eventId);
 
   // Send custom notification
@@ -112,8 +140,16 @@ export async function deleteAppointment(userId: number, eventId: string) {
   return inMemoryStore.appointments;
 }
 
+<<<<<<< HEAD
+async function getCalendarClient(userId: number) {
+  const user = await findUserByUserId(userId);
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+=======
 function getCalendarClient(userId: number) {
   const user = findUserByUserId(userId);
+>>>>>>> origin/dev
   if (!user.refreshToken) {
     throw new AppError("Google not linked", 400);
   }
@@ -128,4 +164,30 @@ function getIndexByEventId(userId: number, eventId: string) {
     throw new AppError("Appointment not found", 404);
   }
   return index;
+<<<<<<< HEAD
+}
+
+export async function findAppointmentsToRemind() {
+  console.log("FILE VERSION 2 - LOADED");
+  console.log("Checking appointments...");
+  const now = new Date();
+  const to = new Date(now.getTime() + 60 * 1000); // ventana 1 min (porque corre cada minuto)
+
+  const appointmentsToRemind = inMemoryStore.appointments.filter((a) => {
+    const start = new Date(a.start);
+    return start >= now && start <= to && !a.reminderSent;
+  });
+  console.log("llegue");
+  console.log(inMemoryStore.appointments.length);
+  return appointmentsToRemind;
+}
+
+export async function markReminderSent(id: number) {
+  const index = inMemoryStore.appointments.findIndex((a) => a.id === id);
+  if (index === -1) {
+    throw new AppError("Appointment not found", 404);
+  }
+  inMemoryStore.appointments[index].reminderSent = true;
+=======
+>>>>>>> origin/dev
 }
