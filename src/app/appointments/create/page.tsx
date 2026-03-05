@@ -27,14 +27,6 @@ export default function CreateAppointmentPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  if (loading) {
-    return <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">Cargando...</div>;
-  }
-
-  if (error) {
-    return <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">Error: {error}</div>;
-  }
-
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [duration, setDuration] = useState("30"); // en minutos
@@ -48,7 +40,7 @@ export default function CreateAppointmentPage() {
     const loadPatients = async () => {
       try {
         const res = await fetchPatients();
-        setError("");
+        setError(null);
 
         if (res && res.length > 0) {
           setPatients(res);
@@ -124,133 +116,139 @@ export default function CreateAppointmentPage() {
     }
   };
 
+  if (loading) {
+    return <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">Cargando...</div>;
+  }
+
+  if (error) {
+    return <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">Error: {error}</div>;
+  }
+
   return (
-    <Suspense fallback={<div>{loading}</div>}>
-      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
-        <h1 className="text-xl font-bold mb-4">Asignar Turno</h1>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* Date & Time */}
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <label className="block text-sm font-medium">Fecha</label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="border rounded px-2 py-1 w-full"
-                required
-              />
-            </div>
-            <div className="flex-1">
-              <label className="block text-sm font-medium">Hora</label>
-              <input
-                type="time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                className="border rounded px-2 py-1 w-full"
-                required
-              />
-            </div>
+    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
+      <h1 className="text-xl font-bold mb-4">Asignar Turno</h1>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {/* Date & Time */}
+        <div className="flex gap-4">
+          <div className="flex-1">
+            <label className="block text-sm font-medium">Fecha</label>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="border rounded px-2 py-1 w-full"
+              required
+            />
           </div>
-
-          {/* Duration */}
-          <div className="flex gap-4 items-end">
-            <div className="flex-1">
-              <label className="block text-sm font-medium">Duración</label>
-              <select
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-                className="border rounded px-2 py-1 w-full"
-              >
-                <option value="15">15 min</option>
-                <option value="30">30 min</option>
-                <option value="45">45 min</option>
-                <option value="60">1 hora</option>
-                <option value="custom">Personalizado...</option>
-              </select>
-            </div>
-
-            {duration === "custom" && (
-              <div className="flex-1">
-                <input
-                  type="number"
-                  placeholder="Minutos"
-                  value={customDuration}
-                  onChange={(e) => setCustomDuration(e.target.value)}
-                  className="border rounded px-2 py-1 w-full"
-                  required
-                />
-              </div>
-            )}
+          <div className="flex-1">
+            <label className="block text-sm font-medium">Hora</label>
+            <input
+              type="time"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              className="border rounded px-2 py-1 w-full"
+              required
+            />
           </div>
+        </div>
 
-          <label>
-            <span className="block text-sm font-medium">Paciente</span>
+        {/* Duration */}
+        <div className="flex gap-4 items-end">
+          <div className="flex-1">
+            <label className="block text-sm font-medium">Duración</label>
             <select
-              value={patientId}
-              onChange={(e) => setPatientId(Number(e.target.value))}
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
               className="border rounded px-2 py-1 w-full"
             >
-              {patients.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name} {p.lastname}
-                </option>
-              ))}
+              <option value="15">15 min</option>
+              <option value="30">30 min</option>
+              <option value="45">45 min</option>
+              <option value="60">1 hora</option>
+              <option value="custom">Personalizado...</option>
             </select>
-          </label>
+          </div>
 
-          <button
-            type="submit"
-            className="bg-blue-600 text-white px-4 py-2 mt-2 rounded hover:bg-blue-700 transition-colors"
+          {duration === "custom" && (
+            <div className="flex-1">
+              <input
+                type="number"
+                placeholder="Minutos"
+                value={customDuration}
+                onChange={(e) => setCustomDuration(e.target.value)}
+                className="border rounded px-2 py-1 w-full"
+                required
+              />
+            </div>
+          )}
+        </div>
+
+        <label>
+          <span className="block text-sm font-medium">Paciente</span>
+          <select
+            value={patientId}
+            onChange={(e) => setPatientId(Number(e.target.value))}
+            className="border rounded px-2 py-1 w-full"
           >
-            Asignar Turno
-          </button>
-        </form>
+            {patients.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name} {p.lastname}
+              </option>
+            ))}
+          </select>
+        </label>
 
-        {/* Advert Modal */}
-        {showNoPatientsModal && (
+        <button
+          type="submit"
+          className="bg-blue-600 text-white px-4 py-2 mt-2 rounded hover:bg-blue-700 transition-colors"
+        >
+          Asignar Turno
+        </button>
+      </form>
+
+      {/* Advert Modal */}
+      {showNoPatientsModal && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          onClick={() => {
+            setShowNoPatientsModal(false);
+            router.push("/appointments");
+          }}
+        >
           <div
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-            onClick={() => {
-              setShowNoPatientsModal(false);
-              router.push("/appointments");
-            }}
+            className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-200"
+            onClick={(e) => e.stopPropagation()} // Evita que el click en el modal cierre el modal
           >
-            <div
-              className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-200"
-              onClick={(e) => e.stopPropagation()} // Evita que el click en el modal cierre el modal
-            >
-              <div className="flex flex-col items-center text-center">
-                <div className="bg-amber-100 p-3 rounded-full mb-4">
-                  <svg
-                    className="w-8 h-8 text-amber-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                    />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">No tienes pacientes</h3>
-                <p className="text-gray-600 mb-6">
-                  Para crear un turno, primero debes dar de alta al menos un paciente en el sistema.
-                </p>
-                <button
-                  onClick={handleNoPatients}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition active:scale-95 shadow-lg shadow-blue-200"
+            <div className="flex flex-col items-center text-center">
+              <div className="bg-amber-100 p-3 rounded-full mb-4">
+                <svg
+                  className="w-8 h-8 text-amber-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  Crear mi primer paciente
-                </button>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
               </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">No tienes pacientes</h3>
+              <p className="text-gray-600 mb-6">
+                Para crear un turno, primero debes dar de alta al menos un paciente en el sistema.
+              </p>
+              <button
+                onClick={handleNoPatients}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition active:scale-95 shadow-lg shadow-blue-200"
+              >
+                Crear mi primer paciente
+              </button>
             </div>
           </div>
-        )}
-      </div>
-    </Suspense>
+        </div>
+      )}
+    </div>
   );
 }
