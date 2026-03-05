@@ -3,10 +3,11 @@ import { SignJWT } from "jose";
 import { createUser, findUserByGoogleId } from "../../user/user.service";
 import { oauth2Client } from "../auth.client";
 import prisma from "@/lib/database/prisma";
+import { routeErrorHandler } from "@/lib/http/routeErrorHandler";
 
 const secret = new TextEncoder().encode(process.env.SESSION_SECRET!);
 
-export async function GET(req: NextRequest) {
+export const GET = routeErrorHandler(async (req: NextRequest) => {
   const { searchParams } = new URL(req.url);
   const code = searchParams.get("code");
 
@@ -39,7 +40,7 @@ export async function GET(req: NextRequest) {
     });
   } else {
     user = await prisma.user.update({
-      where: { googleId: user.googleId },
+      where: { id: user.id },
       data: {
         sid,
         refreshToken: tokens.refresh_token ?? user.refreshToken,
@@ -67,4 +68,4 @@ export async function GET(req: NextRequest) {
   });
 
   return response;
-}
+});

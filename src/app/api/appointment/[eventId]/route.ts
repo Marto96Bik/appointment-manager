@@ -4,93 +4,38 @@ import {
   getAppointmentByEventId,
   updateAppointment,
 } from "../appointment.service";
-import { logger } from "@/lib/logger";
-import { ZodError } from "zod";
-import { AppError } from "../../core/errors/appCustomError";
 import { patchAppointmentSchema } from "@/shared/schemas/appointment.schema";
 import { verifySession } from "../../auth/auth.service";
+import { routeErrorHandler } from "@/lib/http/routeErrorHandler";
 
-export async function GET(req: NextRequest, context: { params: Promise<{ eventId: string }> }) {
-  try {
+export const GET = routeErrorHandler(
+  async (req: NextRequest, context: { params: Promise<{ eventId: string }> }) => {
     const userId = await verifySession(req);
     const { eventId } = await context.params;
 
     const appointment = await getAppointmentByEventId(userId, eventId);
     return NextResponse.json(appointment, { status: 200 });
-  } catch (e) {
-    logger.error(e);
+  },
+);
 
-    if (e instanceof ZodError) {
-      return NextResponse.json(
-        {
-          message: "Invalid request data",
-          issues: e.issues,
-        },
-        { status: 400 },
-      );
-    }
-
-    if (e instanceof AppError) {
-      return NextResponse.json({ message: e.message }, { status: e.status });
-    }
-
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
-  }
-}
-
-export async function PATCH(req: NextRequest, context: { params: Promise<{ eventId: string }> }) {
-  try {
+export const PATCH = routeErrorHandler(
+  async (req: NextRequest, context: { params: Promise<{ eventId: string }> }) => {
     const userId = await verifySession(req);
     const { eventId } = await context.params;
     const data = await req.json();
-
-    patchAppointmentSchema.parse(data); // Validate input data
+    patchAppointmentSchema.parse(data);
+    
     const appointment = await updateAppointment(userId, eventId, data);
     return NextResponse.json(appointment, { status: 200 });
-  } catch (e) {
-    logger.error(e);
+  },
+);
 
-    if (e instanceof ZodError) {
-      return NextResponse.json(
-        {
-          message: "Invalid request data",
-          issues: e.issues,
-        },
-        { status: 400 },
-      );
-    }
-
-    if (e instanceof AppError) {
-      return NextResponse.json({ message: e.message }, { status: e.status });
-    }
-
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
-  }
-}
-export async function DELETE(req: NextRequest, context: { params: Promise<{ eventId: string }> }) {
-  try {
+export const DELETE = routeErrorHandler(
+  async (req: NextRequest, context: { params: Promise<{ eventId: string }> }) => {
     const userId = await verifySession(req);
     const { eventId } = await context.params;
 
     const appointment = await deleteAppointment(userId, eventId);
     return NextResponse.json(appointment, { status: 200 });
-  } catch (e) {
-    logger.error(e);
-
-    if (e instanceof ZodError) {
-      return NextResponse.json(
-        {
-          message: "Invalid request data",
-          issues: e.issues,
-        },
-        { status: 400 },
-      );
-    }
-
-    if (e instanceof AppError) {
-      return NextResponse.json({ message: e.message }, { status: e.status });
-    }
-
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
-  }
-}
+  },
+);

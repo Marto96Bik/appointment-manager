@@ -1,65 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAppointment, getAppointments } from "./appointment.service";
 import { createAppointmentSchema, getAppointmentSchema } from "@/shared/schemas/appointment.schema";
-import { logger } from "@/lib/logger";
-import { AppError } from "../core/errors/appCustomError";
-import { ZodError } from "zod";
 import { verifySession } from "../auth/auth.service";
+import { routeErrorHandler } from "@/lib/http/routeErrorHandler";
 
-export async function GET(req: NextRequest) {
-  try {
-    const userId = await verifySession(req);
-    const params = Object.fromEntries(req.nextUrl.searchParams);
-    const filters = getAppointmentSchema.parse(params); // Validate input data
+export const GET = routeErrorHandler(async (req: NextRequest) => {
+  const userId = await verifySession(req);
+  const params = Object.fromEntries(req.nextUrl.searchParams);
+  getAppointmentSchema.parse(params);
 
-    const appointments = await getAppointments(userId, filters);
-    return NextResponse.json(appointments, { status: 200 });
-  } catch (e) {
-    logger.error(e);
+  const appointments = await getAppointments(userId, params);
+  return NextResponse.json(appointments, { status: 200 });
+});
 
-    if (e instanceof ZodError) {
-      return NextResponse.json(
-        {
-          message: "Invalid request data",
-          issues: e.issues,
-        },
-        { status: 400 },
-      );
-    }
+export const POST = routeErrorHandler(async (req: NextRequest) => {
+  const userId = await verifySession(req);
+  const data = await req.json();
+  createAppointmentSchema.parse(data);
 
-    if (e instanceof AppError) {
-      return NextResponse.json({ message: e.message }, { status: e.status });
-    }
-
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
-  }
-}
-
-export async function POST(req: NextRequest) {
-  try {
-    const userId = await verifySession(req);
-    const data = await req.json();
-    createAppointmentSchema.parse(data); // Validate input data
-
-    const appointment = await createAppointment(userId, data);
-    return NextResponse.json(appointment, { status: 201 });
-  } catch (e) {
-    logger.error(e);
-
-    if (e instanceof ZodError) {
-      return NextResponse.json(
-        {
-          message: "Invalid request data",
-          issues: e.issues,
-        },
-        { status: 400 },
-      );
-    }
-
-    if (e instanceof AppError) {
-      return NextResponse.json({ message: e.message }, { status: e.status });
-    }
-
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
-  }
-}
+  const appointment = await createAppointment(userId, data);
+  return NextResponse.json(appointment, { status: 201 });
+});
