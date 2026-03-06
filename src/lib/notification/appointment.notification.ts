@@ -2,6 +2,7 @@ import {
   AppointmentCreateMessage,
   AppointmentUpdateMessage,
   AppointmentDeleteMessage,
+  AppointmentReminderMessage,
 } from "./messages";
 import { AppointmentMessageData, NotificationType } from "./types/appointment-message.types";
 
@@ -18,6 +19,8 @@ function getStrategy(type: NotificationType) {
       return new AppointmentUpdateMessage();
     case "delete":
       return new AppointmentDeleteMessage();
+    case "reminder":
+      return new AppointmentReminderMessage();
     default:
       throw new Error("Unsupported message type");
   }

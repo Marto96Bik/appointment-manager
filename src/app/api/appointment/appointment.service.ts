@@ -3,7 +3,6 @@ import {
   GetAppointmentDTO,
   PatchAppointmentDTO,
 } from "@/shared/schemas/appointment.schema";
-import { inMemoryStore } from "@/lib/inMemoryStore";
 import { GoogleCalendarClient } from "@/integrations/google-calendar.client";
 import { getPatientById } from "../patient/patient.service";
 import { sendNotification } from "@/lib/notification/notification.service";
@@ -45,7 +44,7 @@ export async function createAppointment(userId: number, appointmentData: CreateA
     });
 
     // Send custom notification
-    sendNotification(patient, newAppointment, "create");
+    sendNotification(patient, newAppointment as unknown as Appointment, "create");
 
     return newAppointment;
   } catch (error: any) {
@@ -134,7 +133,7 @@ export async function updateAppointment(
     });
 
     // Send notification
-    sendNotification(patient, updatedAppointment, "update");
+    sendNotification(patient, updatedAppointment as unknown as Appointment, "update");
 
     return updatedAppointment;
   } catch (error) {
@@ -184,28 +183,26 @@ async function getCalendarClient(userId: number) {
 }
 
 export async function findAppointmentsToRemind() {
-  console.log("FILE VERSION 2 - LOADED");
-  console.log("Checking appointments...");
   const now = new Date();
-  const to = new Date(now.getTime() + 60 * 1000); // ventana 1 min (porque corre cada minuto)
+  const in24Hours = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
-  const appointmentsToRemind = inMemoryStore.appointments.filter((a) => {
-    const start = new Date(a.start);
-    return start >= now && start <= to && !a.reminderSent;
+  return await prisma.appointment.findMany({
+    where: {
+      start: { gte: now, lte: in24Hours },
+      reminderSent: false,
+    },
   });
-  console.log("llegue");
-  console.log(inMemoryStore.appointments.length);
-  return appointmentsToRemind;
 }
 
 export async function markReminderSent(userId: number, id: number) {
-  const appointment = await getAppointmentById(userId, id);
-  appointment.reminderSent = true;
-  return true;
+  await prisma.appointment.updateMany({
+    where: { id, userId },
+    data: { reminderSent: true },
+  });
 }
 
 export async function validateBeforeEdit(userId: number, eventId: string): Promise<Appointment> {
-  const appointment = await prisma.appointment.findUnique({
+  const appointment = await prisma.appointment.findFirst({
     where: { eventId }, // eventId es único global
   });
 
@@ -216,5 +213,5 @@ export async function validateBeforeEdit(userId: number, eventId: string): Promi
   if (appointment.userId !== userId) {
     throw new AppError("Unauthorized", 403);
   }
-  return appointment;
+  return appointment as unknown as Appointment;
 }
