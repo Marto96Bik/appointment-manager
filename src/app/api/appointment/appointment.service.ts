@@ -10,112 +10,168 @@ import { sendNotification } from "@/lib/notification/notification.service";
 import { AppError } from "../core/errors/appCustomError";
 import { Appointment } from "./appointment.model";
 import { findUserByUserId } from "../user/user.service";
+import { handlePrismaError } from "@/lib/database/prismaErrorHandler";
+import prisma from "@/lib/database/prisma";
 
-export async function createAppointment(userId: number, data: CreateAppointmentDTO) {
-  const patient = getPatientById(userId, data.patientId);
-  const calendarClient = await getCalendarClient(userId);
-  const message = `New appointment with ${patient?.name} ${patient?.lastname} `;
+/* -- CREATE -- */
 
-  // New event in google calendar
-  const event = await calendarClient.createEvent({
-    name: message,
-    start: data.start,
-    end: data.end,
-  });
+export async function createAppointment(userId: number, appointmentData: CreateAppointmentDTO) {
+  try {
+    const patient = await getPatientById(userId, appointmentData.patientId);
+    const calendarClient = await getCalendarClient(userId);
+    const eventName = `Turno con ${patient?.name} ${patient?.lastname} `;
 
-  if (!event.id) {
-    throw new AppError("Calendar event was created without ID", 503);
+    // New event in google calendar
+    const event = await calendarClient.createEvent({
+      name: eventName,
+      start: appointmentData.start,
+      end: appointmentData.end,
+    });
+
+    if (!event.id) {
+      throw new AppError("Error in event creation", 400);
+    }
+
+    // New appointment in DB
+    const newAppointment = prisma.appointment.create({
+      data: {
+        ...appointmentData,
+        start: new Date(appointmentData.start),
+        end: new Date(appointmentData.end),
+        eventId: event.id,
+        userId,
+        reminderSent: false,
+      },
+    });
+
+    // Send custom notification
+    sendNotification(patient, newAppointment, "create");
+
+    return newAppointment;
+  } catch (error: any) {
+    handlePrismaError(error);
   }
-
-  // Add appointment to db
-  const newAppointment = {
-    id: inMemoryStore.appointments.length + 1,
-    start: data.start,
-    end: data.end,
-    eventId: event.id,
-    patientId: data.patientId,
-    userId,
-    reminderSent: false,
-  };
-  inMemoryStore.appointments.push(newAppointment);
-
-  // Send custom notification
-  sendNotification(patient, newAppointment, "create");
-  return newAppointment;
 }
+
+/* -- READ -- */
 
 export async function getAppointments(userId: number, params: GetAppointmentDTO) {
-  const { startDate, patientId } = params;
+  try {
+    const { startDate, patientId } = params;
 
-  return inMemoryStore.appointments.filter((a) => {
-    if (a.userId !== userId) return false;
-    if (startDate && a.start.slice(0, 10) !== startDate) return false;
-    if (patientId && a.patientId !== patientId) return false;
-
-    return true;
-  });
-}
-
-export async function getAppointmentByEventId(userId: number, id: string) {
-  const appointment = inMemoryStore.appointments.find(
-    (appointment) => userId === appointment.userId && appointment.eventId === id,
-  );
-  if (!appointment) {
-    throw new AppError("Appointment not found", 404);
+    return await prisma.appointment.findMany({
+      where: {
+        userId,
+        ...(patientId && { patientId }),
+        ...(startDate && {
+          start: {
+            gte: new Date(startDate),
+            lt: new Date(new Date(startDate).setDate(new Date(startDate).getDate() + 1)),
+          },
+        }),
+      },
+    });
+  } catch (error) {
+    handlePrismaError(error);
   }
-  return appointment;
 }
+
+export async function getAppointmentByEventId(userId: number, eventId: string) {
+  try {
+    const appointment = await prisma.appointment.findFirst({
+      where: {
+        userId,
+        eventId,
+      },
+    });
+    return appointment;
+  } catch (error) {
+    handlePrismaError(error);
+  }
+}
+
+export async function getAppointmentById(userId: number, id: number) {
+  try {
+    const appointment = await prisma.appointment.findFirst({
+      where: {
+        id,
+      },
+    });
+    return appointment;
+  } catch (error) {
+    handlePrismaError(error);
+  }
+}
+
+/* -- UPDATE -- */
 
 export async function updateAppointment(
   userId: number,
   eventId: string,
   data: PatchAppointmentDTO,
 ) {
-  // Appointment search
-  const index = getIndexByEventId(userId, eventId);
-  const appointment = inMemoryStore.appointments[index];
+  try {
+    // Validate ownership and existence
+    const appointment = await validateBeforeEdit(userId, eventId);
 
-  // New appointment data
-  const updatedAppointment: Appointment = {
-    ...appointment,
-    start: data.start ?? appointment.start,
-    end: data.end ?? appointment.end,
-  };
+    // DB update
+    const updatedAppointment = await prisma.appointment.update({
+      where: { eventId },
+      data: {
+        start: data.start ? new Date(data.start) : appointment.start,
+        end: data.end ? new Date(data.end) : appointment.end,
+      },
+    });
 
-  // DB update
-  const patient = getPatientById(userId, updatedAppointment.patientId);
-  inMemoryStore.appointments[index] = updatedAppointment;
+    // Get patient for notification
+    const patient = await getPatientById(userId, updatedAppointment.patientId);
 
-  // Google Calendar update
-  const calendarClient = await getCalendarClient(userId);
-  await calendarClient.editEvent(eventId, {
-    start: data.start,
-    end: data.end,
-  });
+    // Google Calendar update
+    const calendarClient = await getCalendarClient(userId);
+    await calendarClient.editEvent(eventId, {
+      start: data.start,
+      end: data.end,
+    });
 
-  // Send custom notification
-  sendNotification(patient, updatedAppointment, "update");
-  return updatedAppointment;
+    // Send notification
+    sendNotification(patient, updatedAppointment, "update");
+
+    return updatedAppointment;
+  } catch (error) {
+    handlePrismaError(error);
+  }
 }
+
+/* -- DELETE -- */
 
 export async function deleteAppointment(userId: number, eventId: string) {
-  // Search appointment
-  const index = getIndexByEventId(userId, eventId);
-  const deletedAppointment = inMemoryStore.appointments[index];
+  try {
+    // Validate ownership and existence, and return appointment
+    const appointment = await validateBeforeEdit(userId, eventId);
 
-  // DB delete
-  const patient = getPatientById(userId, deletedAppointment.patientId);
-  inMemoryStore.appointments.splice(index, 1);
+    // FInd patient for notification
+    const patient = await getPatientById(userId, appointment.patientId);
 
-  // Google Calendar Delete
-  const calendarClient = await getCalendarClient(userId);
-  await calendarClient.deleteEvent(eventId);
+    // DB delete
+    // TODO soft delete to keep record of past appointments and avoid issues with Google Calendar sync
+    await prisma.appointment.delete({
+      where: { eventId },
+    });
 
-  // Send custom notification
-  await sendNotification(patient, deletedAppointment, "delete");
-  return inMemoryStore.appointments;
+    // Google Calendar delete
+    const calendarClient = await getCalendarClient(userId);
+    await calendarClient.deleteEvent(eventId);
+
+    // Send notification
+    await sendNotification(patient, appointment, "delete");
+
+    return appointment;
+  } catch (error) {
+    handlePrismaError(error);
+  }
 }
 
+/* Helper functions */
 async function getCalendarClient(userId: number) {
   const user = await findUserByUserId(userId);
   if (!user) {
@@ -125,16 +181,6 @@ async function getCalendarClient(userId: number) {
     throw new AppError("Google not linked", 400);
   }
   return new GoogleCalendarClient(user.refreshToken);
-}
-
-function getIndexByEventId(userId: number, eventId: string) {
-  const index = inMemoryStore.appointments.findIndex(
-    (a) => a.userId === userId && a.eventId === eventId,
-  );
-  if (index === -1) {
-    throw new AppError("Appointment not found", 404);
-  }
-  return index;
 }
 
 export async function findAppointmentsToRemind() {
@@ -152,10 +198,23 @@ export async function findAppointmentsToRemind() {
   return appointmentsToRemind;
 }
 
-export async function markReminderSent(id: number) {
-  const index = inMemoryStore.appointments.findIndex((a) => a.id === id);
-  if (index === -1) {
+export async function markReminderSent(userId: number, id: number) {
+  const appointment = await getAppointmentById(userId, id);
+  appointment.reminderSent = true;
+  return true;
+}
+
+export async function validateBeforeEdit(userId: number, eventId: string): Promise<Appointment> {
+  const appointment = await prisma.appointment.findUnique({
+    where: { eventId }, // eventId es único global
+  });
+
+  if (!appointment) {
     throw new AppError("Appointment not found", 404);
   }
-  inMemoryStore.appointments[index].reminderSent = true;
+
+  if (appointment.userId !== userId) {
+    throw new AppError("Unauthorized", 403);
+  }
+  return appointment;
 }
