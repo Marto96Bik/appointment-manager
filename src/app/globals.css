@@ -32,7 +32,7 @@
   --fc-button-border-color: var(--primary);
   --fc-button-hover-bg-color: #0f4fd0;
   --fc-button-active-bg-color: #0d43b0;
-  --fc-today-bg-color: rgba(19, 91, 236, 0.05);
+  --fc-today-bg-color: #dbeafe;
   --fc-event-bg-color: var(--primary);
   --fc-page-bg-color: var(--card);
 }
@@ -55,6 +55,10 @@
 .fc-day-fri,
 .fc-day-sat {
   background-color: #f1f5f9 !important;
+}
+
+.fc-day-today {
+  background-color: var(--fc-today-bg-color) !important;
 }
 .fc .fc-daygrid-day-frame {
   min-height: 130px;
