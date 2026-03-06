@@ -69,7 +69,7 @@ export default function AppointmentsPage() {
     })) ?? [];
 
   return (
-    <div className="p-4">
+    <div className="p-4 h-screen min-h-0 flex flex-col overflow-hidden">
       <Calendar
         ref={calendarRef}
         events={events}

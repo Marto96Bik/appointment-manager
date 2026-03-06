@@ -50,7 +50,7 @@ const Calendar = forwardRef<FullCalendar | null, Props>(
     };
 
     return (
-      <div className="calendar-container w-full bg-white rounded-xl shadow-sm border p-2 sm:p-4 h-[80vh] flex flex-col">
+      <div className="calendar-container w-full bg-white rounded-xl shadow-sm border p-2 sm:p-4 flex-1 min-h-0 flex flex-col overflow-hidden">
         <div className="flex justify-end mb-4 items-center gap-2 shrink-0">
           <label className="text-xs font-bold uppercase text-gray-500">Año:</label>
           <select
@@ -65,7 +65,7 @@ const Calendar = forwardRef<FullCalendar | null, Props>(
             ))}
           </select>
         </div>
-        <div className="flex-1 min-h-0">
+        <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
           <FullCalendar
             ref={ref}
             plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
@@ -78,9 +78,8 @@ const Calendar = forwardRef<FullCalendar | null, Props>(
             }}
             firstDay={0}
             height="100%"
-            contentHeight="auto"
             dayMaxEvents={2}
-            scrollTime="09:00:00"
+            scrollTime="08:00:00"
             slotDuration="00:30:00"
             slotLabelFormat={{
               hour: "2-digit", // fuerza dos dígitos
