@@ -56,7 +56,6 @@ export const GET = routeErrorHandler(async (req: NextRequest) => {
     .setExpirationTime("7d")
     .sign(secret);
 
-  //return NextResponse.json({ accessToken, expiresIn: "7d" }, { status: 200 });
   const response = NextResponse.redirect("http://localhost:3000/");
 
   response.cookies.set("jwt", accessToken, {
