@@ -1,13 +1,18 @@
+/**
+ * Run the reminder job locally (e.g. for testing).
+ * Usage: npm run cron:reminder  (or npx tsx src/scripts/runReminder.ts)
+ * Ensure .env is loaded (e.g. from project root where dotenv is applied).
+ */
+import "dotenv/config";
 import { runReminderJob } from "@/jobs/reminder.job";
 
-async function main() {
+(async () => {
   try {
     await runReminderJob();
+    console.log("Done.");
     process.exit(0);
-  } catch (error) {
-    console.error("Reminder job failed:", error);
+  } catch (err) {
+    console.error(err);
     process.exit(1);
   }
-}
-
-main();
+})();
