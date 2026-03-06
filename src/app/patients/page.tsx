@@ -94,7 +94,10 @@ export default function PatientsPage() {
                   <Pencil size={18} />
                 </button>
                 <button
-                  onClick={() => setSelectedPatientId(p.id)}
+                  onClick={() => {
+                    setSelectedPatientId(p.id);
+                    setShowNoPatientsModal(true);
+                  }}
                   disabled={isDeleting}
                   className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-30"
                 >
@@ -152,7 +155,7 @@ export default function PatientsPage() {
               </h3>
               <p className="text-gray-600 mb-5">Esta acción no se puede deshacer.</p>
               <button
-                onClick={() => handleDelete(selectedPatientId)}
+                onClick={() => selectedPatientId && handleDelete(selectedPatientId)}
                 className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition active:scale-95 shadow-lg shadow-red-200"
               >
                 Eliminar Paciente
