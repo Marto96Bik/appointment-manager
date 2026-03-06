@@ -70,15 +70,22 @@ export default function EditAppointmentPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
+        // Fetch appointment details
         const apt = await fetchAppointment(eventId);
         setAppointment(apt);
-        setDate(apt.start.split("T")[0]);
-        setTime(apt.start.split("T")[1].substring(0, 5));
-        const aptDuration = (new Date(apt.end).getTime() - new Date(apt.start).getTime()) / 60000;
+
+        // Pre-fill date, time & duration
+        const { date, time, duration } = parseAppointmentDate(apt.start, apt.end);
+        setDate(date);
+        setTime(time);
         setDuration("custom");
-        setCustomDuration(aptDuration.toString());
+        setCustomDuration(duration);
+
+        // Associated patient
         const pat = await fetchPatient(apt.patientId);
         setPatient(pat);
+
+        // Patients list for the dropdown
         const patients = await fetchPatients();
         setPatients(patients);
       } catch (err: any) {
@@ -236,4 +243,21 @@ export default function EditAppointmentPage() {
       </div>
     </Suspense>
   );
+}
+
+function parseAppointmentDate(startStr: string, endStr: string) {
+  const start = new Date(startStr);
+  const end = new Date(endStr);
+
+  const date = start.toLocaleDateString("en-CA");
+
+  const time = start.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+
+  const duration = ((end.getTime() - start.getTime()) / 60000).toString();
+
+  return { date, time, duration };
 }
