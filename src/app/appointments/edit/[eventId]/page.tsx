@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Suspense } from "react";
-import { set } from "zod";
+import { WhatsAppLinkSuccess } from "@/app/components/whatsapp-link-success";
 
 type Appointment = {
   id: number;
@@ -66,6 +66,7 @@ export default function EditAppointmentPage() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [whatsappLink, setWhatsappLink] = useState<string | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -120,6 +121,19 @@ export default function EditAppointmentPage() {
     );
   }
 
+  if (whatsappLink) {
+    return (
+      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
+        <h1 className="text-xl font-bold mb-4">Turno actualizado</h1>
+        <WhatsAppLinkSuccess
+          whatsappLink={whatsappLink}
+          onDone={() => router.push("/appointments")}
+          title="Link de WhatsApp para el paciente"
+        />
+      </div>
+    );
+  }
+
   // Lógica para obtener la duración final (predefinida o custom)
   const finalDuration = duration === "custom" ? Number(customDuration) : Number(duration);
 
@@ -149,11 +163,16 @@ export default function EditAppointmentPage() {
       }),
     });
 
+    const data = await res.json().catch(() => ({}));
     if (res.ok) {
-      router.push("/appointments");
+      const link = data.whatsappLink as string | undefined;
+      if (link) {
+        setWhatsappLink(link);
+      } else {
+        router.push("/appointments");
+      }
     } else {
-      const error = await res.json();
-      alert("Error: " + error.message);
+      alert("Error: " + (data?.message ?? "Error al guardar"));
     }
   };
 

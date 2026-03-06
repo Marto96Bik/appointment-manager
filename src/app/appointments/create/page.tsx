@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { WhatsAppLinkSuccess } from "@/app/components/whatsapp-link-success";
 
 // TODO: refactor this page, it's too big and has too much logic, split it into smaller components and hooks
 type Patient = {
@@ -34,6 +35,7 @@ export default function CreateAppointmentPage() {
   const [patientId, setPatientId] = useState(1);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [showNoPatientsModal, setShowNoPatientsModal] = useState(false);
+  const [whatsappLink, setWhatsappLink] = useState<string | null>(null);
 
   // Fetch patients for the dropdown
   useEffect(() => {
@@ -108,11 +110,16 @@ export default function CreateAppointmentPage() {
       }),
     });
 
+    const data = await res.json().catch(() => ({}));
     if (res.ok) {
-      router.push("/appointments");
+      const link = data.whatsappLink as string | undefined;
+      if (link) {
+        setWhatsappLink(link);
+      } else {
+        router.push("/appointments");
+      }
     } else {
-      const error = await res.json();
-      alert("Error: " + error.message);
+      alert("Error: " + (data?.message ?? "Error al crear el turno"));
     }
   };
 
@@ -122,6 +129,19 @@ export default function CreateAppointmentPage() {
 
   if (error) {
     return <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">Error: {error}</div>;
+  }
+
+  if (whatsappLink) {
+    return (
+      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
+        <h1 className="text-xl font-bold mb-4">Turno creado</h1>
+        <WhatsAppLinkSuccess
+          whatsappLink={whatsappLink}
+          onDone={() => router.push("/appointments")}
+          title="Link de WhatsApp para el paciente"
+        />
+      </div>
+    );
   }
 
   return (
