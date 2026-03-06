@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, Pencil, PlusIcon, Trash2 } from "lucide-react";
@@ -15,36 +14,48 @@ interface Patient {
   userId: number;
 }
 
-const fetchPatients = async (): Promise<Patient[]> => {
-  const res = await fetch("/api/patient");
-  if (!res.ok) throw new Error("Failed to fetch data");
-  return res.json();
-};
-
 export default function PatientsPage() {
   const router = useRouter();
-  const queryClient = useQueryClient();
-  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [showNoPatientsModal, setShowNoPatientsModal] = useState(false);
   const [selectedPatientId, setSelectedPatientId] = useState<number | null>(null);
 
-  const { data: patients = [], isLoading } = useQuery<Patient[]>({
-    queryKey: ["patients"],
-    queryFn: fetchPatients,
-  });
+  // Fetch patients on mount
+  useEffect(() => {
+    const fetchPatients = async () => {
+      console.log("Fetching patients...");
+      try {
+        const res = await fetch("/api/patient");
+        if (!res.ok) throw new Error("Failed to fetch data");
+        const data = await res.json();
+        console.log("Patients received:", data);
+        setPatients(data);
+      } catch (err) {
+        console.error("Error fetching patients:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const handleDelete = async (id: number): Promise<void> => {
+    fetchPatients();
+  }, []);
+
+  const handleDelete = async (id: number) => {
     setShowNoPatientsModal(true);
 
     try {
       setIsDeleting(true);
       const res = await fetch(`/api/patient/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error();
-      await queryClient.invalidateQueries({ queryKey: ["patients"] });
-    } catch (error) {
+      setPatients((prev) => prev.filter((p) => p.id !== id));
+    } catch (err) {
       alert("No se pudo eliminar el registro");
     } finally {
       setIsDeleting(false);
+      setSelectedPatientId(null);
+      setShowNoPatientsModal(false);
     }
   };
 
@@ -56,7 +67,7 @@ export default function PatientsPage() {
         <div className="text-slate-500 animate-pulse">Cargando pacientes...</div>
       ) : patients.length > 0 ? (
         <ul className="space-y-3">
-          {patients.map((p: Patient) => (
+          {patients.map((p) => (
             <li
               key={p.id}
               className="group flex items-center justify-between p-4 border border-slate-200 rounded-xl bg-white hover:shadow-md transition-all"
@@ -83,10 +94,7 @@ export default function PatientsPage() {
                   <Pencil size={18} />
                 </button>
                 <button
-                  onClick={() => {
-                    setSelectedPatientId(p.id);
-                    setShowNoPatientsModal(true);
-                  }}
+                  onClick={() => setSelectedPatientId(p.id)}
                   disabled={isDeleting}
                   className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-30"
                 >
@@ -114,12 +122,12 @@ export default function PatientsPage() {
       </button>
 
       {/* MODAL DE ADVERTENCIA */}
-      {showNoPatientsModal && (
+      {selectedPatientId && showNoPatientsModal && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
           onClick={() => {
             setShowNoPatientsModal(false);
-            setSelectedPatientId(null); // Limpiamos el ID seleccionado
+            setSelectedPatientId(null);
           }}
         >
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-200">
@@ -144,12 +152,7 @@ export default function PatientsPage() {
               </h3>
               <p className="text-gray-600 mb-5">Esta acción no se puede deshacer.</p>
               <button
-                onClick={() => {
-                  if (selectedPatientId) {
-                    handleDelete(selectedPatientId);
-                    setShowNoPatientsModal(false); // Cierra el modal tras borrar
-                  }
-                }}
+                onClick={() => handleDelete(selectedPatientId)}
                 className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition active:scale-95 shadow-lg shadow-red-200"
               >
                 Eliminar Paciente

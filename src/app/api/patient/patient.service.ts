@@ -1,78 +1,121 @@
 import { CreatePatientDTO, getPatientDTO, patchPatientDTO } from "@/shared/schemas/patient.schema";
-import { inMemoryStore } from "@/lib/inMemoryStore";
 import { AppError } from "../core/errors/appCustomError";
-import { Patient } from "./patient.model";
+import { handlePrismaError } from "@/lib/database/prismaErrorHandler";
+import prisma from "@/lib/database/prisma";
 
-export function createPatient(userId: number, data: CreatePatientDTO) {
-  patientExists(userId, data.documentId);
-  const newPatient = {
-    id: inMemoryStore.patients.length + 1,
-    ...data,
-    userId: userId,
-  };
-  inMemoryStore.patients.push(newPatient);
-  return newPatient;
+export async function createPatient(userId: number, data: CreatePatientDTO) {
+  try {
+    const patient = await patientExists(userId, data.documentId);
+    if (patient?.deletedAt) {
+      const revivedPatient = await prisma.patient.update({
+        where: { id: patient.id },
+        data: { deletedAt: null, ...data },
+      });
+      return revivedPatient;
+    }
+
+    const newPatient = await prisma.patient.create({
+      data: {
+        ...data,
+        userId: userId,
+      },
+    });
+
+    return newPatient;
+  } catch (error) {
+    handlePrismaError(error);
+  }
 }
 
-export function getPatientById(userId: number, patientId: number) {
-  const patient = inMemoryStore.patients.find((p) => p.userId === userId && p.id === patientId);
-  if (!patient) {
-    throw new AppError("Patient not found", 404);
+export async function getPatientById(userId: number, patientId: number) {
+  try {
+    return validatePatientOwnership(userId, patientId);
+  } catch (error) {
+    handlePrismaError(error);
   }
+}
+
+export async function getPatientsList(userId: number, filters: getPatientDTO) {
+  try {
+    const patients = await prisma.patient.findMany({
+      where: {
+        userId,
+        deletedAt: null,
+        name: filters.name ? { contains: filters.name, mode: "insensitive" } : undefined,
+        lastname: filters.lastname
+          ? { contains: filters.lastname, mode: "insensitive" }
+          : undefined,
+        phone: filters.phone || undefined,
+        documentId: filters.documentId || undefined,
+      },
+    });
+
+    return patients;
+  } catch (error: any) {
+    handlePrismaError(error);
+  }
+}
+
+export async function updatePatient(userId: number, patientId: number, data: patchPatientDTO) {
+  try {
+    const patient = await validatePatientOwnership(userId, patientId);
+
+    const updatedPatient = await prisma.patient.update({
+      where: {
+        id: patientId,
+      },
+      data: {
+        name: data.name ?? patient.name,
+        lastname: data.lastname ?? patient.lastname,
+        phone: data.phone ?? patient.phone,
+        documentId: data.documentId ?? patient.documentId,
+      },
+    });
+
+    return updatedPatient;
+  } catch (error) {
+    handlePrismaError(error);
+  }
+}
+
+export async function deletePatient(userId: number, patientId: number) {
+  try {
+    const patient = await validatePatientOwnership(userId, patientId);
+
+    await prisma.patient.update({
+      where: { id: patientId },
+      data: { deletedAt: new Date() },
+    });
+
+    return patient;
+  } catch (error) {
+    handlePrismaError(error);
+  }
+}
+
+async function patientExists(userId: number, documentId: string) {
+  const patient = await prisma.patient.findFirst({
+    where: {
+      userId,
+      documentId,
+    },
+  });
+
   return patient;
 }
 
-export function getPatientsList(userId: number, filters: getPatientDTO) {
-  // Filter by user
-  const userPatients = inMemoryStore.patients.filter((patient) => patient.userId === userId);
-
-  // Filter by params
-  const filteredPatients = userPatients.filter((patient) => {
-    return (
-      (!filters.name || patient.name?.toLowerCase().includes(filters.name.toLowerCase())) &&
-      (!filters.lastname ||
-        patient.lastname?.toLowerCase().includes(filters.lastname.toLowerCase())) &&
-      (!filters.phone || patient.phone === filters.phone) &&
-      (!filters.documentId || patient.documentId === filters.documentId)
-    );
+export async function validatePatientOwnership(userId: number, patientId: number) {
+  const patient = await prisma.patient.findUnique({
+    where: { id: patientId },
   });
 
-  return filteredPatients;
-}
-
-export function updatePatient(userId: number, patientId: number, data: patchPatientDTO) {
-  const index = getIndexByPatientId(userId, patientId);
-  const patient = inMemoryStore.patients[index];
-
-  const updatedPatient: Patient = {
-    ...patient,
-    name: data.name ?? patient.name,
-    lastname: data.lastname ?? patient.lastname,
-    phone: data.phone ?? patient.phone,
-    documentId: data.documentId ?? patient.documentId,
-  };
-
-  inMemoryStore.patients[index] = updatedPatient;
-  return updatedPatient;
-}
-
-export function deletePatient(userId: number, patientId: number) {
-  // TODO soft delete
-  const index = getIndexByPatientId(userId, patientId);
-  inMemoryStore.patients.splice(index, 1);
-  return inMemoryStore.patients;
-}
-
-function patientExists(userId: number, documentId: string) {
-  if (inMemoryStore.patients.some((p) => p.userId === userId && p.documentId === documentId)) {
-    throw new AppError("Patient already exists", 400);
+  if (!patient || patient.deletedAt) {
+    throw new AppError("Patient not found or deleted", 404);
   }
-}
 
-function getIndexByPatientId(userId: number, patientId: number) {
-  const index = inMemoryStore.patients.findIndex((p) => p.userId === userId && p.id === patientId);
-  if (index === -1) {
-    throw new AppError("Patient not found", 404);
+  if (patient.userId !== userId) {
+    throw new AppError("Unauthorized", 403);
   }
-  return index;
+
+  return patient;
 }

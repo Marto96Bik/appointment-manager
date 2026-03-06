@@ -33,13 +33,19 @@ model Patient {
   name       String
   lastname   String
   phone      String
-  documentId String    @unique
+  documentId String
   userId     Int
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 
+  deletedAt DateTime?
+
   user        User        @relation(fields: [userId], references: [id])
   appointments Appointment[]
+
+  @@unique([userId, documentId])
+  @@index([userId])
+  @@index([userId, phone])
 }
 
 model Appointment {

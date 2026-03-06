@@ -9,7 +9,7 @@ export const GET = routeErrorHandler(async (req: NextRequest) => {
   const params = Object.fromEntries(req.nextUrl.searchParams);
   const filters = getPatientSchema.parse(params);
 
-  const patients = getPatientsList(userId, filters);
+  const patients = await getPatientsList(userId, filters);
   return NextResponse.json(patients, { status: 200 });
 });
 
