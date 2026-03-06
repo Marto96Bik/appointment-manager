@@ -18,6 +18,6 @@ export const POST = routeErrorHandler(async (req: NextRequest) => {
   const data = await req.json();
   createAppointmentSchema.parse(data);
 
-  const appointment = await createAppointment(userId, data);
-  return NextResponse.json(appointment, { status: 201 });
+  const result = await createAppointment(userId, data);
+  return NextResponse.json(result, { status: 201 });
 });

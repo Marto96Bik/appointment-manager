@@ -32,7 +32,7 @@ export async function createAppointment(userId: number, appointmentData: CreateA
     }
 
     // New appointment in DB
-    const newAppointment = prisma.appointment.create({
+    const newAppointment = await prisma.appointment.create({
       data: {
         ...appointmentData,
         start: new Date(appointmentData.start),
@@ -43,10 +43,10 @@ export async function createAppointment(userId: number, appointmentData: CreateA
       },
     });
 
-    // Send custom notification
-    sendNotification(patient, newAppointment as unknown as Appointment, "create");
+    // Generate wa.link tiny URL (same behaviour as before, without Twilio)
+    const whatsappLink = await sendNotification(patient, newAppointment, "create");
 
-    return newAppointment;
+    return { appointment: newAppointment, whatsappLink };
   } catch (error: any) {
     handlePrismaError(error);
   }
@@ -132,10 +132,10 @@ export async function updateAppointment(
       end: data.end,
     });
 
-    // Send notification
-    sendNotification(patient, updatedAppointment as unknown as Appointment, "update");
+    // Generate wa.link notification link
+    const whatsappLink = await sendNotification(patient, updatedAppointment, "update");
 
-    return updatedAppointment;
+    return { appointment: updatedAppointment, whatsappLink };
   } catch (error) {
     handlePrismaError(error);
   }
@@ -161,7 +161,7 @@ export async function deleteAppointment(userId: number, eventId: string) {
     const calendarClient = await getCalendarClient(userId);
     await calendarClient.deleteEvent(eventId);
 
-    // Send notification
+    // Generate wa.link notification link
     await sendNotification(patient, appointment, "delete");
 
     return appointment;

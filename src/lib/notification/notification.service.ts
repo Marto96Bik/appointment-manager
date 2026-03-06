@@ -1,16 +1,25 @@
-import { Appointment } from "../../app/api/appointment/appointment.model";
 import { buildMessage } from "./appointment.notification";
 import { Patient } from "../../app/api/patient/patient.model";
-import { TwilioClient } from "../../integrations/twilio.client";
+import { WaLinkClient } from "../../integrations/wa-link.client";
 import { NotificationType } from "./types/appointment-message.types";
 
-const twilioClient = new TwilioClient();
+/** Appointment-like object (accepts Prisma result with Date or model with string). */
+type AppointmentForNotification = { start: string | Date };
 
+const waLinkClient = new WaLinkClient();
+
+const DEFAULT_COUNTRY_CODE = "972";
+
+/**
+ * Generates a wa.link tiny URL with the appointment notification message.
+ * Same behaviour as before (triggered on create/update/delete/reminder) but without Twilio.
+ * Returns the generated link so callers can include it in the response (e.g. when creating an appointment).
+ */
 export async function sendNotification(
   patient: Patient,
-  appointment: Appointment,
+  appointment: AppointmentForNotification,
   type: NotificationType,
-) {
+): Promise<string> {
   const message = buildMessage(
     {
       patientName: patient.name,
@@ -20,5 +29,10 @@ export async function sendNotification(
     type,
   );
 
-  await twilioClient.sendMessage(process.env.TWILIO_WHATSAPP_FROM!, patient.phone, message);
+  const countryCode = process.env.WA_LINK_COUNTRY_CODE ?? DEFAULT_COUNTRY_CODE;
+  return waLinkClient.createLink({
+    phone: patient.phone,
+    countryCode,
+    message,
+  });
 }

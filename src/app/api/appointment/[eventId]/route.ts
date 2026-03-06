@@ -25,8 +25,8 @@ export const PATCH = routeErrorHandler(
     const data = await req.json();
     patchAppointmentSchema.parse(data);
     
-    const appointment = await updateAppointment(userId, eventId, data);
-    return NextResponse.json(appointment, { status: 200 });
+    const result = await updateAppointment(userId, eventId, data);
+    return NextResponse.json(result, { status: 200 });
   },
 );
 
