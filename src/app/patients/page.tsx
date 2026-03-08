@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, Pencil, PlusIcon, Trash2 } from "lucide-react";
+import Loader from "../components/loader";
 
 interface Patient {
   id: number;
@@ -17,26 +18,27 @@ interface Patient {
 export default function PatientsPage() {
   const router = useRouter();
   const [patients, setPatients] = useState<Patient[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showNoPatientsModal, setShowNoPatientsModal] = useState(false);
   const [selectedPatientId, setSelectedPatientId] = useState<number | null>(null);
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
   // Fetch patients on mount
   useEffect(() => {
+    setLoading(true);
     const fetchPatients = async () => {
-      console.log("Fetching patients...");
-      try {
-        const res = await fetch("/api/patient");
-        if (!res.ok) throw new Error("Failed to fetch data");
-        const data = await res.json();
-        console.log("Patients received:", data);
-        setPatients(data);
-      } catch (err) {
-        console.error("Error fetching patients:", err);
-      } finally {
-        setIsLoading(false);
+      const res = await fetch("/api/patient");
+
+      if (!res.ok) {
+        setError("Error cargando pacientes");
+        return;
       }
+
+      const data = await res.json();
+      setPatients(data);
+      setLoading(false);
     };
 
     fetchPatients();
@@ -51,7 +53,8 @@ export default function PatientsPage() {
       if (!res.ok) throw new Error();
       setPatients((prev) => prev.filter((p) => p.id !== id));
     } catch (err) {
-      alert("No se pudo eliminar el registro");
+      setError("No se pudo eliminar el registro");
+      return;
     } finally {
       setIsDeleting(false);
       setSelectedPatientId(null);
@@ -59,13 +62,23 @@ export default function PatientsPage() {
     }
   };
 
+  if (loading) {
+    return <Loader />;
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow text-red-600">
+        Error: {error}
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 max-w-2xl mx-auto pb-32">
       <h1 className="text-2xl font-bold mb-6 text-slate-800">Pacientes</h1>
 
-      {isLoading ? (
-        <div className="text-slate-500 animate-pulse">Cargando pacientes...</div>
-      ) : patients.length > 0 ? (
+      {patients.length > 0 ? (
         <ul className="space-y-3">
           {patients.map((p) => (
             <li

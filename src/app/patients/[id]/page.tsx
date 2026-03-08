@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { z } from "zod";
 import { patchPatientSchema } from "@/shared/schemas/patient.schema";
+import Loader from "@/app/components/loader";
 
 type PatientForm = z.infer<typeof patchPatientSchema>;
 
@@ -15,15 +16,15 @@ export default function InfoPatientPage() {
   const [showNoPatientsModal, setShowNoPatientsModal] = useState(false);
   const [selectedPatientId, setSelectedPatientId] = useState<number | null>(null);
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
   const [form, setForm] = useState<PatientForm>({
     name: "",
     lastname: "",
     phone: "",
     documentId: "",
   });
-
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!id) return;
@@ -71,6 +72,18 @@ export default function InfoPatientPage() {
       setLoading(false);
     }
   };
+
+  if (loading) {
+    return <Loader />;
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow text-red-600">
+        Error: {error}
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white shadow-sm border border-slate-200 rounded-xl p-6 max-w-md mx-auto">

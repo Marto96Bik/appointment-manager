@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Suspense } from "react";
 import { WhatsAppLinkSuccess } from "@/app/components/whatsapp-link-success";
+import Loader from "@/app/components/loader";
 
 type Appointment = {
   id: number;
@@ -57,6 +58,8 @@ export default function EditAppointmentPage() {
   const [appointment, setAppointment] = useState<Appointment | null>(null);
   const [patient, setPatient] = useState<Patient | null>(null);
 
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [duration, setDuration] = useState("30"); // en minutos
@@ -100,18 +103,6 @@ export default function EditAppointmentPage() {
       loadData();
     }
   }, [eventId]);
-
-  if (loading) {
-    return <div>Loader</div>;
-  }
-
-  if (error) {
-    return (
-      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow text-red-600">
-        Error: {error}
-      </div>
-    );
-  }
 
   if (!appointment || !patient) {
     return (
@@ -157,6 +148,8 @@ export default function EditAppointmentPage() {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        name,
+        description,
         start: formatToISO(startDateTime),
         end: formatToISO(endDateTime),
         patientId: Number(patientId),
@@ -176,11 +169,54 @@ export default function EditAppointmentPage() {
     }
   };
 
+  if (loading) {
+    return <Loader />;
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow text-red-600">
+        Error: {error}
+      </div>
+    );
+  }
+
+  if (!appointment || !patient) {
+    return (
+      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
+        Appointment not found
+      </div>
+    );
+  }
+
+  async function handlePatientChange(patientId: number): Promise<void> {
+    setPatientId(patientId);
+    const patient = await fetchPatient(patientId);
+    setName(`Turno con ${patient.name} ${patient.lastname}`);
+    setDescription(
+      `Paciente: ${patient.name} ${patient.lastname}\n
+      Teléfono: ${patient.phone}\n
+      Documento: ${patient.documentId}`,
+    );
+  }
+
   return (
     <Suspense fallback={<div>{loading}</div>}>
       <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
         <h1 className="text-xl font-bold mb-4">Editar Turno</h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          {/* Name */}
+          <label>
+            <span className="block text-sm font-medium">Nombre del evento</span>
+            <input
+              type="text"
+              placeholder="Turno con ..."
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="border rounded px-2 py-1 w-full"
+            />
+          </label>
+
           {/* Fecha y Hora Alineados */}
           <div className="flex gap-4">
             <div className="flex-1">
@@ -240,15 +276,30 @@ export default function EditAppointmentPage() {
             <span className="block text-sm font-medium">Paciente</span>
             <select
               value={patientId}
-              onChange={(e) => setPatientId(Number(e.target.value))}
+              onChange={(e) => handlePatientChange(Number(e.target.value))}
               className="border rounded px-2 py-1 w-full"
             >
+              <option value={0} disabled>
+                Seleccione un paciente
+              </option>
               {patients.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name} {p.lastname}
                 </option>
               ))}
             </select>
+          </label>
+
+          {/* Description */}
+          <label>
+            <span className="block text-sm font-medium">Descripción</span>
+            <textarea
+              placeholder="Notas adicionales sobre el turno"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="border rounded px-2 py-1 w-full"
+              rows={3}
+            />
           </label>
 
           <button

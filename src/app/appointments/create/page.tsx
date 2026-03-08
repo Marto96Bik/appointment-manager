@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense } from "react";
 import { WhatsAppLinkSuccess } from "@/app/components/whatsapp-link-success";
+import Loader from "@/app/components/loader";
 
 // TODO: refactor this page, it's too big and has too much logic, split it into smaller components and hooks
 type Patient = {
@@ -21,6 +21,12 @@ async function fetchPatients(): Promise<Patient[]> {
   return res.json();
 }
 
+async function fetchPatient(id: number): Promise<Patient> {
+  const res = await fetch(`/api/patient/${id}`);
+  if (!res.ok) throw new Error("Failed to fetch patient");
+  return res.json();
+}
+
 export default function CreateAppointmentPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -28,14 +34,18 @@ export default function CreateAppointmentPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [duration, setDuration] = useState("30"); // en minutos
   const [customDuration, setCustomDuration] = useState("");
-  const [patientId, setPatientId] = useState(1);
+  const [patientId, setPatientId] = useState(0);
   const [patients, setPatients] = useState<Patient[]>([]);
+
   const [showNoPatientsModal, setShowNoPatientsModal] = useState(false);
   const [whatsappLink, setWhatsappLink] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   // Fetch patients for the dropdown
   useEffect(() => {
@@ -46,9 +56,7 @@ export default function CreateAppointmentPage() {
 
         if (res && res.length > 0) {
           setPatients(res);
-          setPatientId(res[0].id);
         } else {
-          // En lugar de alert, mostramos el modal
           setShowNoPatientsModal(true);
         }
       } catch (err: any) {
@@ -89,42 +97,61 @@ export default function CreateAppointmentPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!date || !time || !finalDuration) {
+    if (submitting) return; // Prevent double submission
+
+    if (!name || !date || !time || !finalDuration || patientId === 0) {
       alert("Por favor complete todos los campos.");
       return;
     }
 
-    const startDateTime = new Date(`${date}T${time}`);
-    const endDateTime = new Date(startDateTime.getTime() + finalDuration * 60000);
+    setSubmitting(true);
 
-    // Format to local ISO type date string without timezone (e.g., 2024-06-30T14:30:00)
-    const formatToISO = (d: Date) => d.toLocaleString("sv").replace(" ", "T");
+    try {
+      const startDateTime = new Date(`${date}T${time}`);
+      const endDateTime = new Date(startDateTime.getTime() + finalDuration * 60000);
 
-    const res = await fetch("/api/appointment", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        start: formatToISO(startDateTime),
-        end: formatToISO(endDateTime),
-        patientId: Number(patientId),
-      }),
-    });
+      // Format to local ISO type date string without timezone (e.g., 2024-06-30T14:30:00)
+      const formatToISO = (d: Date) => d.toLocaleString("sv").replace(" ", "T");
 
-    const data = await res.json().catch(() => ({}));
-    if (res.ok) {
-      const link = data.whatsappLink as string | undefined;
-      if (link) {
-        setWhatsappLink(link);
+      const res = await fetch("/api/appointment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          description,
+          start: formatToISO(startDateTime),
+          end: formatToISO(endDateTime),
+          patientId: Number(patientId),
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        const link = data.whatsappLink as string | undefined;
+        if (link) {
+          setWhatsappLink(link);
+        } else {
+          router.push("/appointments");
+        }
       } else {
-        router.push("/appointments");
+        alert("Error: " + (data?.message ?? "Error al crear el turno"));
       }
-    } else {
-      alert("Error: " + (data?.message ?? "Error al crear el turno"));
+    } finally {
+      setSubmitting(false);
     }
   };
 
+  async function handlePatientChange(patientId: number): Promise<void> {
+    setPatientId(patientId);
+    const patient = await fetchPatient(patientId);
+    setName(`Turno con ${patient.name} ${patient.lastname}`);
+    setDescription(
+      `Paciente: ${patient.name} ${patient.lastname}\nTeléfono: ${patient.phone}\nDocumento: ${patient.documentId}`,
+    );
+  }
+
   if (loading) {
-    return <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">Cargando...</div>;
+    return <Loader />;
   }
 
   if (error) {
@@ -148,6 +175,18 @@ export default function CreateAppointmentPage() {
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
       <h1 className="text-xl font-bold mb-4">Asignar Turno</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {/* Name */}
+        <label>
+          <span className="block text-sm font-medium">Nombre del evento</span>
+          <input
+            type="text"
+            placeholder="Turno con ..."
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="border rounded px-2 py-1 w-full"
+          />
+        </label>
+
         {/* Date & Time */}
         <div className="flex gap-4">
           <div className="flex-1">
@@ -203,13 +242,17 @@ export default function CreateAppointmentPage() {
           )}
         </div>
 
+        {/* Pacient */}
         <label>
           <span className="block text-sm font-medium">Paciente</span>
           <select
             value={patientId}
-            onChange={(e) => setPatientId(Number(e.target.value))}
+            onChange={(e) => handlePatientChange(Number(e.target.value))}
             className="border rounded px-2 py-1 w-full"
           >
+            <option value={0} disabled>
+              Seleccione un paciente
+            </option>
             {patients.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name} {p.lastname}
@@ -218,11 +261,24 @@ export default function CreateAppointmentPage() {
           </select>
         </label>
 
+        {/* Description */}
+        <label>
+          <span className="block text-sm font-medium">Descripción</span>
+          <textarea
+            placeholder="Notas adicionales sobre el turno"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="border rounded px-2 py-1 w-full"
+            rows={3}
+          />
+        </label>
+
         <button
           type="submit"
-          className="bg-blue-600 text-white px-4 py-2 mt-2 rounded hover:bg-blue-700 transition-colors"
+          disabled={submitting}
+          className="bg-blue-600 text-white px-4 py-2 mt-2 rounded hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Asignar Turno
+          {submitting ? "Creando..." : "Asignar Turno"}
         </button>
       </form>
 

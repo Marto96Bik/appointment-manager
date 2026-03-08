@@ -16,7 +16,7 @@ export default function AppointmentsPage() {
     end: new Date().toISOString(),
   });
 
-  const { data, isLoading } = useAppointments(range.start, range.end);
+  const { data } = useAppointments(range.start, range.end);
 
   const handleYearChange = (newYear: number) => {
     setYear(newYear);
@@ -59,20 +59,20 @@ export default function AppointmentsPage() {
     router.push(`/appointments/${eventId}`);
   };
 
-  const events =
-    data?.map((event: any) => ({
-      id: event.id,
-      title: event.summary || "Sin título",
-      start: event.start?.dateTime || event.start?.date,
-      end: event.end?.dateTime || event.end?.date,
-      allDay: !event.start?.dateTime,
+  const appoitnments =
+    data?.map((appointment) => ({
+      id: appointment.eventId,
+      title: appointment.name || "Cita sin título",
+      start: appointment.start,
+      end: appointment.end,
+      allDay: false,
     })) ?? [];
 
   return (
     <div className="p-4 h-screen min-h-0 flex flex-col overflow-hidden">
       <Calendar
         ref={calendarRef}
-        events={events}
+        events={appoitnments}
         currentYear={year}
         onYearChange={handleYearChange}
         onDateClick={handleDateSelection}

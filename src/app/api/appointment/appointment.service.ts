@@ -34,11 +34,13 @@ export async function createAppointment(userId: number, appointmentData: CreateA
     // New appointment in DB
     const newAppointment = await prisma.appointment.create({
       data: {
-        ...appointmentData,
+        name: appointmentData.name,
+        description: appointmentData.description,
         start: new Date(appointmentData.start),
         end: new Date(appointmentData.end),
         eventId: event.id,
         userId,
+        patientId: appointmentData.patientId,
         reminderSent: false,
       },
     });
@@ -56,20 +58,22 @@ export async function createAppointment(userId: number, appointmentData: CreateA
 
 export async function getAppointments(userId: number, params: GetAppointmentDTO) {
   try {
-    const { startDate, patientId } = params;
+    const { start, end, patientId } = params;
 
-    return await prisma.appointment.findMany({
+    const appointments = await prisma.appointment.findMany({
       where: {
         userId,
         ...(patientId && { patientId }),
-        ...(startDate && {
-          start: {
-            gte: new Date(startDate),
-            lt: new Date(new Date(startDate).setDate(new Date(startDate).getDate() + 1)),
-          },
+        ...(start && {
+          start: { gte: new Date(start) },
+        }),
+        ...(end && {
+          end: { lte: new Date(end) },
         }),
       },
     });
+    console.log("Appointments found:", appointments);
+    return appointments;
   } catch (error) {
     handlePrismaError(error);
   }
@@ -119,6 +123,8 @@ export async function updateAppointment(
       data: {
         start: data.start ? new Date(data.start) : appointment.start,
         end: data.end ? new Date(data.end) : appointment.end,
+        name: data.name !== undefined ? data.name : appointment.name,
+        description: data.description !== undefined ? data.description : appointment.description,
       },
     });
 
