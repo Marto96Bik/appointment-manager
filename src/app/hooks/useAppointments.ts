@@ -19,7 +19,6 @@ export function useAppointments(start: string, end: string): UseAppointmentsResu
         // Extract just the start date in YYYY-MM-DD format
         const startDate = new Date(start).toISOString();
         const endDate = new Date(end).toISOString();
-        console.log("Fetching appointments with range:", { startDate, endDate });
         const params = new URLSearchParams({ startDate, endDate });
         const response = await fetch(`/api/appointment?${params}`);
         if (!response.ok) {

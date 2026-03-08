@@ -9,7 +9,6 @@ import { runReminderJob } from "@/jobs/reminder.job";
 (async () => {
   try {
     await runReminderJob();
-    console.log("Done.");
     process.exit(0);
   } catch (err) {
     console.error(err);

@@ -72,7 +72,6 @@ export async function getAppointments(userId: number, params: GetAppointmentDTO)
         }),
       },
     });
-    console.log("Appointments found:", appointments);
     return appointments;
   } catch (error) {
     handlePrismaError(error);
