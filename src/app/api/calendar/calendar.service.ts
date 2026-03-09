@@ -1,5 +1,5 @@
 import { GoogleCalendarClient } from "@/integrations/google-calendar.client";
-import { AppError } from "../core/errors/appCustomError";
+import { AppError } from "../../../lib/errors/appCustomError";
 import { findUserByUserId } from "../user/user.service";
 
 export async function getCalendarEvents(userId: number, start: string, end: string) {

@@ -2,14 +2,14 @@ import {
   CreateAppointmentDTO,
   GetAppointmentDTO,
   PatchAppointmentDTO,
-} from "@/shared/schemas/appointment.schema";
+} from "@/schema/appointment.schema";
 import { GoogleCalendarClient } from "@/integrations/google-calendar.client";
 import { getPatientById } from "../patient/patient.service";
 import { sendNotification } from "@/lib/notification/notification.service";
-import { AppError } from "../core/errors/appCustomError";
+import { AppError } from "../../../lib/errors/appCustomError";
 import { Appointment } from "./appointment.model";
 import { findUserByUserId } from "../user/user.service";
-import { handlePrismaError } from "@/lib/database/prismaErrorHandler";
+import { handlePrismaError } from "@/lib/errors/prismaErrorHandler";
 import prisma from "@/lib/database/prisma";
 
 /* -- CREATE -- */

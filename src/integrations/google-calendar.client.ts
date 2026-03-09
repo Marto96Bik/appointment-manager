@@ -1,4 +1,4 @@
-import { AppError } from "../app/api/core/errors/appCustomError";
+import { AppError } from "../lib/errors/appCustomError";
 import { calendar_v3, google } from "googleapis";
 
 export class GoogleCalendarClient {

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { patchPatientSchema } from "@/shared/schemas/patient.schema";
+import { patchPatientSchema } from "@/schema/patient.schema";
 import { deletePatient, updatePatient, getPatientById } from "../patient.service";
 import { verifySession } from "../../auth/auth.service";
-import { routeErrorHandler } from "@/lib/http/routeErrorHandler";
+import { routeErrorHandler } from "@/lib/errors/routeErrorHandler";
 
 export const GET = routeErrorHandler(
   async (req: NextRequest, { params }: { params: Promise<{ id: string }> }) => {

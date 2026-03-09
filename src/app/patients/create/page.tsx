@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
-import { createPatientSchema } from "@/shared/schemas/patient.schema";
-import { COUNTRY_LIMITS } from "@/shared/phone/phone.config";
-import { buildPhone } from "@/shared/phone/phone.utils";
+import { createPatientSchema } from "@/schema/patient.schema";
+import { COUNTRY_LIMITS } from "@/lib/phone/phone.config";
+import { buildPhone } from "@/lib/phone/phone.utils";
 
 type PatientForm = z.infer<typeof createPatientSchema>;
 

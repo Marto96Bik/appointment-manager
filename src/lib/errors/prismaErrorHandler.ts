@@ -1,4 +1,4 @@
-import { AppError } from "@/app/api/core/errors/appCustomError";
+import { AppError } from "@/lib/errors/appCustomError";
 
 export function handlePrismaError(error: any): never {
   if (error.code === "P2002") {

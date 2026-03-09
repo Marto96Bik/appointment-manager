@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
-import { updateUserSchema } from "@/shared/schemas/user.schema";
-import { COUNTRY_LIMITS, KNOWN_PREFIXES } from "@/shared/phone/phone.config";
-import { buildPhone, splitPhone } from "@/shared/phone/phone.utils";
+import { updateUserSchema } from "@/schema/user.schema";
+import { COUNTRY_LIMITS, KNOWN_PREFIXES } from "@/lib/phone/phone.config";
+import { buildPhone, splitPhone } from "@/lib/phone/phone.utils";
 type UserForm = z.infer<typeof updateUserSchema>;
 
 export default function EditAccountPage() {

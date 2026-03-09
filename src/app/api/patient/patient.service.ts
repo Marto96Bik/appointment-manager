@@ -1,6 +1,6 @@
-import { CreatePatientDTO, getPatientDTO, patchPatientDTO } from "@/shared/schemas/patient.schema";
-import { AppError } from "../core/errors/appCustomError";
-import { handlePrismaError } from "@/lib/database/prismaErrorHandler";
+import { CreatePatientDTO, getPatientDTO, patchPatientDTO } from "@/schema/patient.schema";
+import { AppError } from "@/lib/errors/appCustomError";
+import { handlePrismaError } from "@/lib/errors/prismaErrorHandler";
 import prisma from "@/lib/database/prisma";
 
 export async function createPatient(userId: number, data: CreatePatientDTO) {

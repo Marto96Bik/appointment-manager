@@ -1,5 +1,5 @@
-import { handlePrismaError } from "@/lib/database/prismaErrorHandler";
-import { CreateUserDto, UpdateUserDto } from "@/shared/schemas/user.schema";
+import { handlePrismaError } from "@/lib/errors/prismaErrorHandler";
+import { CreateUserDto, UpdateUserDto } from "@/schema/user.schema";
 import prisma from "@/lib/database/prisma";
 
 /* Create */

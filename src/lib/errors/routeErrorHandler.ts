@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
-import { AppError } from "@/app/api/core/errors/appCustomError";
-import { logger } from "@/lib/logger";
+import { AppError } from "@/lib/errors/appCustomError";
+import { logger } from "@/lib/utils/logger";
 
 export function routeErrorHandler<T extends (...args: any[]) => Promise<Response>>(handler: T) {
   return async (...args: Parameters<T>): Promise<Response> => {

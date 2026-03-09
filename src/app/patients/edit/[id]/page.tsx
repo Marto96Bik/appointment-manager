@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { z } from "zod";
-import { patchPatientSchema } from "@/shared/schemas/patient.schema";
-import { COUNTRY_LIMITS, KNOWN_PREFIXES } from "@/shared/phone/phone.config";
-import { buildPhone, splitPhone } from "@/shared/phone/phone.utils";
+import { patchPatientSchema } from "@/schema/patient.schema";
+import { COUNTRY_LIMITS, KNOWN_PREFIXES } from "@/lib/phone/phone.config";
+import { buildPhone, splitPhone } from "@/lib/phone/phone.utils";
 
 type PatientForm = z.infer<typeof patchPatientSchema>;
 

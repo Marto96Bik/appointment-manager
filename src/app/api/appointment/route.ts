@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAppointment, getAppointments } from "./appointment.service";
-import { createAppointmentSchema, getAppointmentSchema } from "@/shared/schemas/appointment.schema";
+import { createAppointmentSchema, getAppointmentSchema } from "@/schema/appointment.schema";
 import { verifySession } from "../auth/auth.service";
-import { routeErrorHandler } from "@/lib/http/routeErrorHandler";
+import { routeErrorHandler } from "@/lib/errors/routeErrorHandler";
 
 export const GET = routeErrorHandler(async (req: NextRequest) => {
   const userId = await verifySession(req);

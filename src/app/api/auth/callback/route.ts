@@ -3,7 +3,7 @@ import { SignJWT } from "jose";
 import { createUser, findUserByGoogleId } from "../../user/user.service";
 import { oauth2Client } from "../auth.client";
 import prisma from "@/lib/database/prisma";
-import { routeErrorHandler } from "@/lib/http/routeErrorHandler";
+import { routeErrorHandler } from "@/lib/errors/routeErrorHandler";
 
 const secret = new TextEncoder().encode(process.env.SESSION_SECRET!);
 

@@ -1,5 +1,5 @@
 import { AppointmentMessageStrategy } from "../appointment-message.strategy";
-import { formatDateTime } from "../../datetime";
+import { formatDateTime } from "../../utils/datetime";
 import { AppointmentMessageData } from "../types/appointment-message.types";
 
 export class AppointmentUpdateMessage implements AppointmentMessageStrategy {

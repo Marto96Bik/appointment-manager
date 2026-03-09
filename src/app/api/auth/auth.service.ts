@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
-import { AppError } from "../core/errors/appCustomError";
+import { AppError } from "../../../lib/errors/appCustomError";
 import { findUserByGoogleId, findUserByUserId } from "../user/user.service";
 
 const secret = new TextEncoder().encode(process.env.SESSION_SECRET!);

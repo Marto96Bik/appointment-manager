@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { logger } from "@/lib/logger";
-import { AppError } from "../core/errors/appCustomError";
+import { logger } from "@/lib/utils/logger";
+import { AppError } from "../../../lib/errors/appCustomError";
 import { ZodError } from "zod";
 import { verifySession } from "../auth/auth.service";
 import { getCalendarEvents } from "./calendar.service";

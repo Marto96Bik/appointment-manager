@@ -4,9 +4,9 @@ import {
   getAppointmentByEventId,
   updateAppointment,
 } from "../appointment.service";
-import { patchAppointmentSchema } from "@/shared/schemas/appointment.schema";
+import { patchAppointmentSchema } from "@/schema/appointment.schema";
 import { verifySession } from "../../auth/auth.service";
-import { routeErrorHandler } from "@/lib/http/routeErrorHandler";
+import { routeErrorHandler } from "@/lib/errors/routeErrorHandler";
 
 export const GET = routeErrorHandler(
   async (req: NextRequest, context: { params: Promise<{ eventId: string }> }) => {
@@ -24,7 +24,7 @@ export const PATCH = routeErrorHandler(
     const { eventId } = await context.params;
     const data = await req.json();
     patchAppointmentSchema.parse(data);
-    
+
     const result = await updateAppointment(userId, eventId, data);
     return NextResponse.json(result, { status: 200 });
   },

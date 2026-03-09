@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifySession } from "../auth/auth.service";
 import { deleteUser, findUserByUserId, updateUser } from "./user.service";
-import { updateUserSchema } from "@/shared/schemas/user.schema";
-import { routeErrorHandler } from "@/lib/http/routeErrorHandler";
+import { updateUserSchema } from "@/schema/user.schema";
+import { routeErrorHandler } from "@/lib/errors/routeErrorHandler";
 
 export const GET = routeErrorHandler(async (req: NextRequest) => {
   const userId = await verifySession(req);

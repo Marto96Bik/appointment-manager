@@ -4,28 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { WhatsAppLinkSuccess } from "@/app/components/whatsapp-link-success";
 import Loader from "@/app/components/loader";
-
-// TODO: refactor this page, it's too big and has too much logic, split it into smaller components and hooks
-type Patient = {
-  id: number;
-  name: string;
-  lastname: string;
-  phone: string;
-  documentId: string;
-  userId: number;
-};
-
-async function fetchPatients(): Promise<Patient[]> {
-  const res = await fetch("/api/patient");
-  if (!res.ok) throw new Error("Failed to fetch patients");
-  return res.json();
-}
-
-async function fetchPatient(id: number): Promise<Patient> {
-  const res = await fetch(`/api/patient/${id}`);
-  if (!res.ok) throw new Error("Failed to fetch patient");
-  return res.json();
-}
+import { Patient } from "@prisma/client";
+import { fetchPatient, fetchPatients } from "@/app/clients/patient.client";
 
 export default function CreateAppointmentPage() {
   const router = useRouter();
@@ -34,7 +14,7 @@ export default function CreateAppointmentPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [name, setName] = useState("");
+  const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
@@ -99,7 +79,7 @@ export default function CreateAppointmentPage() {
 
     if (submitting) return; // Prevent double submission
 
-    if (!name || !date || !time || !finalDuration || patientId === 0) {
+    if (!title || !date || !time || !finalDuration || patientId === 0) {
       alert("Por favor complete todos los campos.");
       return;
     }
@@ -117,7 +97,7 @@ export default function CreateAppointmentPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name,
+          title,
           description,
           start: formatToISO(startDateTime),
           end: formatToISO(endDateTime),
@@ -144,7 +124,7 @@ export default function CreateAppointmentPage() {
   async function handlePatientChange(patientId: number): Promise<void> {
     setPatientId(patientId);
     const patient = await fetchPatient(patientId);
-    setName(`Turno con ${patient.name} ${patient.lastname}`);
+    setTitle(`Turno con ${patient.name} ${patient.lastname}`);
     setDescription(
       `Paciente: ${patient.name} ${patient.lastname}\nTeléfono: ${patient.phone}\nDocumento: ${patient.documentId}`,
     );
@@ -181,8 +161,8 @@ export default function CreateAppointmentPage() {
           <input
             type="text"
             placeholder="Turno con ..."
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
             className="border rounded px-2 py-1 w-full"
           />
         </label>

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Calendar from "../components/calendar";
-import { useAppointments } from "../hooks/useAppointments";
+import { fetchAppointments } from "../clients/appointment.client";
 import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -16,8 +16,29 @@ export default function AppointmentsPage() {
     end: new Date().toISOString(),
   });
 
-  const { data } = useAppointments(range.start, range.end);
+  const [appointments, setAppointments] = useState<any[]>([]);
 
+  // Fetch appointments on date range change.
+  useEffect(() => {
+    const loadAppointments = async () => {
+      const data = await fetchAppointments(range.start, range.end);
+
+      setAppointments(data);
+    };
+    loadAppointments();
+  }, [range.start, range.end]);
+
+  // Map appointments to calendar event format.
+  const events =
+    appointments?.map((appointment) => ({
+      id: appointment.eventId,
+      title: appointment.name || "Turno sin título",
+      start: appointment.start,
+      end: appointment.end,
+      allDay: false,
+    })) ?? [];
+
+  // Update calendar view when year changes.
   const handleYearChange = (newYear: number) => {
     setYear(newYear);
     if (calendarRef.current) {
@@ -29,7 +50,7 @@ export default function AppointmentsPage() {
     }
   };
 
-  // Every time the calendar changes the visible range.
+  // Visible range setting.
   const handleDatesSet = (dateInfo: any) => {
     setRange({
       start: dateInfo.startStr,
@@ -37,42 +58,26 @@ export default function AppointmentsPage() {
     });
   };
 
-  // This is called when a date is clicked.
-  // It can be a real event (with id) or a tentative one (id = "tentative")
+  // Click on a calendar slot to create a new appointment.
   const handleDateSelection = (startStr: string) => {
-    // FullCalendar sometimes sends startStr as null, we ignore those cases.
     if (!startStr) return;
-
     const [date, fullTime] = startStr.split("T");
-    // If there is no time (month view), we set it to 00:00
     const time = fullTime ? fullTime.substring(0, 5) : "00:00";
 
     router.push(`/appointments/create?date=${date}&time=${time}`);
   };
 
+  // Click on an existing event to view/edit it.
   const handleEventClick = (eventId: string) => {
-    // If it's the tentative event, we do nothing here.
-    // onDateClick already handles it through the Calendar component.
     if (eventId === "tentative") return;
-
-    // Si es un evento real, vamos al detalle.
     router.push(`/appointments/${eventId}`);
   };
-
-  const appoitnments =
-    data?.map((appointment) => ({
-      id: appointment.eventId,
-      title: appointment.name || "Cita sin título",
-      start: appointment.start,
-      end: appointment.end,
-      allDay: false,
-    })) ?? [];
 
   return (
     <div className="p-4 h-screen min-h-0 flex flex-col overflow-hidden">
       <Calendar
         ref={calendarRef}
-        events={appoitnments}
+        events={events}
         currentYear={year}
         onYearChange={handleYearChange}
         onDateClick={handleDateSelection}

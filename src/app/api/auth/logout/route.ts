@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sessionLogout, verifySession } from "../auth.service";
-import { logger } from "@/lib/logger";
+import { logger } from "@/lib/utils/logger";
 import { ZodError } from "zod";
-import { AppError } from "../../core/errors/appCustomError";
+import { AppError } from "../../../../lib/errors/appCustomError";
 
 export async function POST(req: NextRequest) {
   try {

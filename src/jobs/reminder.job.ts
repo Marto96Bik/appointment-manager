@@ -7,7 +7,6 @@ import { sendNotification } from "@/lib/notification/notification.service";
 import { Appointment } from "@/app/api/appointment/appointment.model";
 
 export async function runReminderJob() {
-
   const appointments = await findAppointmentsToRemind();
 
   for (const appointment of appointments) {

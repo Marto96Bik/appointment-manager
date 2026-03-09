@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runReminderJob } from "@/jobs/reminder.job";
-import { routeErrorHandler } from "@/lib/http/routeErrorHandler";
+import { routeErrorHandler } from "@/lib/errors/routeErrorHandler";
 
 /**
  * Vercel Cron invokes this route on the schedule defined in vercel.json.
