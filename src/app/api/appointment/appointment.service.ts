@@ -47,7 +47,7 @@ export async function createAppointment(userId: number, appointmentData: CreateA
     const startDate = parseAndValidateDate(appointmentData.start, "start");
     const endDate = parseAndValidateDate(appointmentData.end, "end");
 
-    if (startDate >= endDate) {
+    if (startDate! >= endDate!) {
       throw new AppError("Appointment end must be after start", 400);
     }
 
@@ -56,8 +56,8 @@ export async function createAppointment(userId: number, appointmentData: CreateA
       data: {
         name: appointmentData.name,
         description: appointmentData.description,
-        start: startDate,
-        end: endDate,
+        start: startDate!,
+        end: endDate!,
         eventId: event.id,
         userId,
         patientId: appointmentData.patientId,
