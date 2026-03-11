@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 
 const WA_LINK_BASE = "https://wa.link/";
 
@@ -19,57 +19,37 @@ type Props = Readonly<{
 }>;
 
 export function WhatsAppLinkSuccess({ whatsappLink, onDone, title }: Props) {
-  const [copied, setCopied] = useState(false);
   const absoluteLink = useMemo(() => toAbsoluteWaLink(whatsappLink), [whatsappLink]);
 
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(absoluteLink);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   return (
-    <div className="rounded-lg border border-green-200 bg-green-50 p-4">
-      <h3 className="text-sm font-semibold text-green-800 mb-2">
-        {title ?? "Link de WhatsApp generado"}
+    <div className="border-green-200 bg-green-50  shadow-sm border border-slate-200 rounded-xl p-7">
+      <h3 className="text-2xl font-semibold text-slate-800 mb-4">
+        {title ?? "Avisá al paciente por WhatsApp"}
       </h3>
-      <p className="text-xs text-green-700 mb-2">
-        Compartí este link con el paciente para que reciba el mensaje por WhatsApp.
+      <p className="text-sm text-slate-800">
+        Se ha generado un link de WhatsApp para que puedas avisar al paciente sobre su turno.
       </p>
-      <div className="flex flex-wrap items-center gap-2 mb-3">
-        <form action={absoluteLink} target="_blank" method="get" className="contents">
+      <div className="space-y-4">
+        <div className="space-y-4" />
+        <div className="flex flex-col gap-2">
+          <form action={absoluteLink} target="_blank" method="get" className="sm:flex-1">
+            <button
+              type="submit"
+              className="w-full text-sm px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition"
+            >
+              WhatsApp
+            </button>
+          </form>
+
           <button
-            type="submit"
-            className="text-blue-600 hover:underline text-sm break-all text-left cursor-pointer bg-transparent border-0 p-0"
+            type="button"
+            onClick={onDone}
+            className="w-full text-sm py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 transition sm:flex-1"
           >
-            {absoluteLink}
+            Volver a turnos
           </button>
-        </form>
+        </div>
       </div>
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={handleCopy}
-          className="text-sm px-3 py-1.5 rounded border border-green-600 text-green-700 hover:bg-green-100 transition-colors"
-        >
-          {copied ? "Copiado" : "Copiar link"}
-        </button>
-        <form action={absoluteLink} target="_blank" method="get" className="inline-block">
-          <button
-            type="submit"
-            className="text-sm px-3 py-1.5 rounded bg-green-600 text-white hover:bg-green-700 transition-colors w-full"
-          >
-            Abrir WhatsApp
-          </button>
-        </form>
-      </div>
-      <button
-        type="button"
-        onClick={onDone}
-        className="mt-3 w-full text-sm py-2 rounded border border-gray-300 bg-white hover:bg-gray-50 transition-colors"
-      >
-        Volver a turnos
-      </button>
     </div>
   );
 }

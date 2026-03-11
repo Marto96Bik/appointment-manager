@@ -78,12 +78,11 @@ export default function EditAppointmentPage() {
 
   if (whatsappLink) {
     return (
-      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
-        <h1 className="text-xl font-bold mb-4">Turno actualizado</h1>
+      <div className="max-w-md mx-auto mt-10 rounded shadow">
         <WhatsAppLinkSuccess
           whatsappLink={whatsappLink}
           onDone={() => router.push("/appointments")}
-          title="Link de WhatsApp para el paciente"
+          title="Turno actualizado"
         />
       </div>
     );
