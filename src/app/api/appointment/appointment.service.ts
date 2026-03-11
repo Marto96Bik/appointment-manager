@@ -12,6 +12,19 @@ import { findUserByUserId } from "../user/user.service";
 import { handlePrismaError } from "@/lib/errors/prismaErrorHandler";
 import prisma from "@/lib/database/prisma";
 
+function parseAndValidateDate(value: string | Date | undefined, label: string): Date | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    throw new AppError(`Invalid ${label} date`, 400);
+  }
+
+  return date;
+}
+
 /* -- CREATE -- */
 
 export async function createAppointment(userId: number, appointmentData: CreateAppointmentDTO) {
@@ -31,13 +44,20 @@ export async function createAppointment(userId: number, appointmentData: CreateA
       throw new AppError("Error in event creation", 400);
     }
 
+    const startDate = parseAndValidateDate(appointmentData.start, "start");
+    const endDate = parseAndValidateDate(appointmentData.end, "end");
+
+    if (startDate >= endDate) {
+      throw new AppError("Appointment end must be after start", 400);
+    }
+
     // New appointment in DB
     const newAppointment = await prisma.appointment.create({
       data: {
         name: appointmentData.name,
         description: appointmentData.description,
-        start: new Date(appointmentData.start),
-        end: new Date(appointmentData.end),
+        start: startDate,
+        end: endDate,
         eventId: event.id,
         userId,
         patientId: appointmentData.patientId,
@@ -116,12 +136,19 @@ export async function updateAppointment(
     // Validate ownership and existence
     const appointment = await validateBeforeEdit(userId, eventId);
 
+    const startDate = data.start ? parseAndValidateDate(data.start, "start") : appointment.start;
+    const endDate = data.end ? parseAndValidateDate(data.end, "end") : appointment.end;
+
+    if (startDate! >= endDate!) {
+      throw new AppError("Appointment end must be after start", 400);
+    }
+
     // DB update
     const updatedAppointment = await prisma.appointment.update({
       where: { eventId },
       data: {
-        start: data.start ? new Date(data.start) : appointment.start,
-        end: data.end ? new Date(data.end) : appointment.end,
+        start: startDate,
+        end: endDate,
         name: data.name !== undefined ? data.name : appointment.name,
         description: data.description !== undefined ? data.description : appointment.description,
       },
