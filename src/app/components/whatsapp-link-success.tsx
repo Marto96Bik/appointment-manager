@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { CheckCheck } from "lucide-react";
 
 const WA_LINK_BASE = "https://wa.link/";
 
@@ -22,10 +23,12 @@ export function WhatsAppLinkSuccess({ whatsappLink, onDone, title }: Props) {
   const absoluteLink = useMemo(() => toAbsoluteWaLink(whatsappLink), [whatsappLink]);
 
   return (
-    <div className="border-green-200 bg-green-50  shadow-sm border border-slate-200 rounded-xl p-7">
-      <h3 className="text-2xl font-semibold text-slate-800 mb-4">
-        {title ?? "Avisá al paciente por WhatsApp"}
+    <div className="border-green-200 bg-green-50 shadow-sm border border-slate-200 rounded-xl p-7">
+      <h3 className="text-2xl font-semibold text-slate-800 mb-4 flex items-center gap-2">
+        <CheckCheck color="#53de13" size={30} />
+        <span>{title ?? "Avisá al paciente por WhatsApp"}</span>
       </h3>
+
       <p className="text-sm text-slate-800">
         Se ha generado un link de WhatsApp para que puedas avisar al paciente sobre su turno.
       </p>
