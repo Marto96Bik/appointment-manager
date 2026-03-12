@@ -19,11 +19,12 @@ export async function sendNotification(
   patient: Patient,
   appointment: AppointmentForNotification,
   type: NotificationType,
+  professionalName: string,
 ): Promise<string> {
   const message = buildMessage(
     {
       patientName: patient.name,
-      professionalName: "Mama de sabri",
+      professionalName,
       date: appointment.start,
     },
     type,

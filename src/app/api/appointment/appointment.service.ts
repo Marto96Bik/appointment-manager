@@ -52,8 +52,14 @@ export async function createAppointment(userId: number, appointmentData: CreateA
       },
     });
 
+    const professional = await findUserByUserId(userId);
     // Generate wa.link tiny URL (same behaviour as before, without Twilio)
-    const whatsappLink = await sendNotification(patient, newAppointment, "create");
+    const whatsappLink = await sendNotification(
+      patient,
+      newAppointment,
+      "create",
+      `${professional!.name} ${professional!.lastname}`,
+    );
 
     return { appointment: newAppointment, whatsappLink };
   } catch (error: any) {
@@ -151,8 +157,14 @@ export async function updateAppointment(
       end: data.end,
     });
 
+    const professional = await findUserByUserId(userId);
     // Generate wa.link notification link
-    const whatsappLink = await sendNotification(patient, updatedAppointment, "update");
+    const whatsappLink = await sendNotification(
+      patient,
+      updatedAppointment,
+      "update",
+      `${professional!.name} ${professional!.lastname}`,
+    );
 
     return { appointment: updatedAppointment, whatsappLink };
   } catch (error) {
@@ -180,8 +192,14 @@ export async function deleteAppointment(userId: number, eventId: string) {
     const calendarClient = await getCalendarClient(userId);
     await calendarClient.deleteEvent(eventId);
 
+    const professional = await findUserByUserId(userId);
     // Generate wa.link notification link
-    await sendNotification(patient, appointment, "delete");
+    await sendNotification(
+      patient,
+      appointment,
+      "delete",
+      `${professional!.name} ${professional!.lastname}`,
+    );
 
     return appointment;
   } catch (error) {
