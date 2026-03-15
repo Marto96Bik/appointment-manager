@@ -21,5 +21,5 @@ export const GET = routeErrorHandler(async (req: NextRequest) => {
   }
 
   await runCheckReminders();
-  return NextResponse.json({ ok: true, message: "Reminder job completed" });
+  return NextResponse.json({ ok: true, message: "Reminder job completed" }, { status: 200 });
 });

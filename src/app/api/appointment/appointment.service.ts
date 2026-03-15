@@ -231,6 +231,15 @@ export async function findAppointmentsToRemind() {
   });
 }
 
+export async function findAppointmentReminderPending(userId: number) {
+  return await prisma.appointment.findMany({
+    where: {
+      userId,
+      reminderPending: true,
+    },
+  });
+}
+
 export async function markReminderPending(userId: number, id: number) {
   await prisma.appointment.updateMany({
     where: { id, userId },
