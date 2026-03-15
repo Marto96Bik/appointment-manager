@@ -5,6 +5,6 @@ import { findAppointmentReminderPending } from "../appointment/appointment.servi
 
 export const GET = routeErrorHandler(async (req: NextRequest) => {
   const userId = await verifySession(req);
-  const appoitnemtsToRemind = await findAppointmentReminderPending(userId);
-  return NextResponse.json(appoitnemtsToRemind, { status: 200 });
+  const appointments = await findAppointmentReminderPending(userId);
+  return NextResponse.json(appointments, { status: 200 });
 });
