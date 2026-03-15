@@ -232,12 +232,50 @@ export async function findAppointmentsToRemind() {
 }
 
 export async function findAppointmentReminderPending(userId: number) {
-  return await prisma.appointment.findMany({
+  const professional = await findUserByUserId(userId);
+
+  const appointments = await prisma.appointment.findMany({
     where: {
       userId,
       reminderPending: true,
     },
+    select: {
+      id: true,
+      start: true,
+      eventId: true,
+      patient: {
+        select: {
+          id: true,
+          name: true,
+          lastname: true,
+          phone: true,
+          documentId: true,
+          userId: true,
+        },
+      },
+    },
   });
+
+  const result = await Promise.all(
+    appointments.map(async (apt) => {
+      const whatsappLink = await sendNotification(
+        apt.patient,
+        apt,
+        "reminder",
+        `${professional!.name} ${professional!.lastname}`,
+      );
+
+      return {
+        id: apt.id,
+        start: apt.start,
+        patientFullName: `${apt.patient.name} ${apt.patient.lastname}`,
+        whatsappLink,
+        eventId: apt.eventId,
+      };
+    }),
+  );
+
+  return result;
 }
 
 export async function markReminderPending(userId: number, id: number) {
@@ -247,9 +285,9 @@ export async function markReminderPending(userId: number, id: number) {
   });
 }
 
-export async function markReminderSent(userId: number, id: number) {
+export async function markReminderSent(userId: number, eventId: string) {
   await prisma.appointment.updateMany({
-    where: { id, userId },
+    where: { userId, eventId },
     data: { reminderPending: false, reminderSent: true },
   });
 }

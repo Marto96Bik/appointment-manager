@@ -1,11 +1,15 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { WhatsAppLinkSuccess } from "./whatsapp-link-success";
+import router from "next/router";
 
 interface Reminder {
   id: number;
-  patientName: string;
+  patientFullName: string;
   start: string;
+  whatsappLink: string;
+  eventId: string;
 }
 
 export default function NotificationBell() {
@@ -13,7 +17,14 @@ export default function NotificationBell() {
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const [whatsappLink, setWhatsappLink] = useState<string | null>(null);
+
   async function loadReminders() {
+    setLoading(true);
     try {
       const res = await fetch("/api/reminders");
 
@@ -22,7 +33,9 @@ export default function NotificationBell() {
       const data = await res.json();
       setReminders(data);
     } catch (err) {
-      console.error("Error loading reminders", err);
+      setError("Error loading reminders");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -51,6 +64,58 @@ export default function NotificationBell() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const handleNotify = async (reminder: Reminder) => {
+    if (submitting) return; // Prevent double submission
+    setSubmitting(true);
+
+    try {
+      const res = await fetch(`/api/reminders/${reminder.eventId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        const link = data.whatsappLink as string | undefined;
+        if (link) {
+          setWhatsappLink(link);
+        } else {
+          setError(
+            "Error al redirigir al enlace de WhatsApp. Por favor avise al paciente manualmente.",
+          );
+        }
+      } else {
+        alert("Error: " + (data?.message ?? "Error al notificar"));
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (loading) {
+    <div className="flex flex-row gap-2">
+      <div className="w-4 h-4 rounded-full bg-blue-700 animate-bounce"></div>
+      <div className="w-4 h-4 rounded-full bg-blue-700 animate-bounce [animation-delay:-.3s]"></div>
+      <div className="w-4 h-4 rounded-full bg-blue-700 animate-bounce [animation-delay:-.5s]"></div>
+    </div>;
+  }
+
+  if (error) {
+    return <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">Error: {error}</div>;
+  }
+
+  if (whatsappLink) {
+    return (
+      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
+        <h1 className="text-xl font-bold mb-4">Turno creado</h1>
+        <WhatsAppLinkSuccess
+          whatsappLink={whatsappLink}
+          onDone={() => router.push("/appointments")}
+          title="Link de WhatsApp para el paciente"
+        />
+      </div>
+    );
+  }
 
   return (
     <div ref={containerRef} className="relative">
@@ -93,9 +158,12 @@ export default function NotificationBell() {
             reminders.map((reminder) => (
               <button
                 key={reminder.id}
+                onClick={() => {
+                  handleNotify(reminder);
+                }}
                 className="w-full text-left px-4 py-3 hover:bg-gray-100 border-b last:border-none"
               >
-                <div className="font-medium">{reminder.patientName}</div>
+                <div className="font-medium">{reminder.patientFullName}</div>
                 <div className="text-sm text-gray-500">
                   {new Date(reminder.start).toLocaleString()}
                 </div>
