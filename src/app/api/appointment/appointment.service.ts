@@ -7,7 +7,7 @@ import { GoogleCalendarClient } from "@/integrations/google-calendar.client";
 import { getPatientById } from "../patient/patient.service";
 import { sendNotification } from "@/lib/notification/notification.service";
 import { AppError } from "../../../lib/errors/appCustomError";
-import { Appointment } from "./appointment.model";
+import { Appointment } from "@prisma/client";
 import { findUserByUserId } from "../user/user.service";
 import { handlePrismaError } from "@/lib/errors/prismaErrorHandler";
 import prisma from "@/lib/database/prisma";
@@ -221,20 +221,27 @@ async function getCalendarClient(userId: number) {
 
 export async function findAppointmentsToRemind() {
   const now = new Date();
-  const in24Hours = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+  const in36Hours = new Date(now.getTime() + 36 * 60 * 60 * 1000);
 
   return await prisma.appointment.findMany({
     where: {
-      start: { gte: now, lte: in24Hours },
+      start: { gte: now, lte: in36Hours },
       reminderSent: false,
     },
+  });
+}
+
+export async function markReminderPending(userId: number, id: number) {
+  await prisma.appointment.updateMany({
+    where: { id, userId },
+    data: { reminderPending: true },
   });
 }
 
 export async function markReminderSent(userId: number, id: number) {
   await prisma.appointment.updateMany({
     where: { id, userId },
-    data: { reminderSent: true },
+    data: { reminderPending: false, reminderSent: true },
   });
 }
 

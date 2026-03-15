@@ -49,17 +49,18 @@ model Patient {
 }
 
 model Appointment {
-  id           Int      @id @default(autoincrement())
-  name         String?
-  description  String?
-  start        DateTime
-  end          DateTime
-  eventId      String    @unique
-  patientId    Int
-  userId       Int
-  reminderSent Boolean   @default(false)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id              Int      @id @default(autoincrement())
+  name            String?
+  description     String?
+  start           DateTime
+  end             DateTime
+  eventId         String    @unique
+  patientId       Int
+  userId          Int
+  reminderPending Boolean   @default(false)
+  reminderSent    Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   patient Patient @relation(fields: [patientId], references: [id])
   user    User    @relation(fields: [userId], references: [id])

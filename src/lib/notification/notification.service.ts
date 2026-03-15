@@ -2,6 +2,7 @@ import { buildMessage } from "./appointment.notification";
 import { Patient } from "../../app/api/patient/patient.model";
 import { WaLinkClient } from "../../integrations/wa-link.client";
 import { NotificationType } from "./types/appointment-message.types";
+import { Appointment } from "@prisma/client";
 
 /** Appointment-like object (accepts Prisma result with Date or model with string). */
 type AppointmentForNotification = { start: string | Date };

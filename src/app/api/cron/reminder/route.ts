@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { runReminderJob } from "@/jobs/reminder.job";
 import { routeErrorHandler } from "@/lib/errors/routeErrorHandler";
+import { runCheckReminders } from "@/jobs/reminders";
 
 /**
  * Vercel Cron invokes this route on the schedule defined in vercel.json.
@@ -20,6 +20,6 @@ export const GET = routeErrorHandler(async (req: NextRequest) => {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  await runReminderJob();
+  await runCheckReminders();
   return NextResponse.json({ ok: true, message: "Reminder job completed" });
 });
