@@ -5,6 +5,7 @@ import Calendar from "../components/calendar";
 import { fetchAppointments } from "../clients/appointment.client";
 import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Header from "../components/header";
 
 export default function AppointmentsPage() {
   const calendarRef = useRef<any>(null);
@@ -74,16 +75,20 @@ export default function AppointmentsPage() {
   };
 
   return (
-    <div className="p-4 h-screen min-h-0 flex flex-col overflow-hidden">
-      <Calendar
-        ref={calendarRef}
-        events={events}
-        currentYear={year}
-        onYearChange={handleYearChange}
-        onDateClick={handleDateSelection}
-        onEventClick={handleEventClick}
-        onDatesSet={handleDatesSet}
-      />
+    <div className="h-screen flex flex-col">
+      <Header />
+
+      <div className="p-4 flex-1 min-h-0 flex flex-col overflow-hidden">
+        <Calendar
+          ref={calendarRef}
+          events={events}
+          currentYear={year}
+          onYearChange={handleYearChange}
+          onDateClick={handleDateSelection}
+          onEventClick={handleEventClick}
+          onDatesSet={handleDatesSet}
+        />
+      </div>
 
       <button
         onClick={() => router.push("/appointments/create")}
