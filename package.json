@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "cron:reminder": "tsx src/scripts/runReminder.ts"
+    "cron:reminder": "tsx src/jobs/reminders.ts"
   },
   "dependencies": {
     "@fullcalendar/daygrid": "^6.1.20",

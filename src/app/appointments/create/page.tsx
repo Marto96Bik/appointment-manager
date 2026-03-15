@@ -97,7 +97,7 @@ export default function CreateAppointmentPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title,
+          name: title,
           description,
           start: formatToISO(startDateTime),
           end: formatToISO(endDateTime),
