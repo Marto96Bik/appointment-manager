@@ -28,6 +28,7 @@ export default function EditAppointmentPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [whatsappLink, setWhatsappLink] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -91,47 +92,53 @@ export default function EditAppointmentPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const finalDuration = duration === "custom" ? customDuration : duration;
+    setSubmitting(true);
 
-    if (Number(finalDuration) < 10) {
-      alert("Duración inválida");
-      return;
-    }
+    try {
+      const finalDuration = duration === "custom" ? customDuration : duration;
 
-    if (!date || !time || !finalDuration) {
-      alert("Por favor complete todos los campos.");
-      return;
-    }
-
-    // Determine start & end datetimes
-    const startDateTime = new Date(`${date}T${time}`);
-    const endDateTime = new Date(startDateTime.getTime() + Number(finalDuration) * 60000);
-
-    // Format to ISO local string without timezone (e.g. "2024-06-30T14:30")
-    const formatToISO = (d: Date) => d.toISOString();
-
-    const res = await fetch(`/api/appointment/${eventId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name,
-        description,
-        start: formatToISO(startDateTime),
-        end: formatToISO(endDateTime),
-        patientId: Number(patientId),
-      }),
-    });
-
-    const data = await res.json().catch(() => ({}));
-    if (res.ok) {
-      const link = data.whatsappLink as string | undefined;
-      if (link) {
-        setWhatsappLink(link);
-      } else {
-        router.push("/appointments");
+      if (Number(finalDuration) < 10) {
+        alert("Duración inválida");
+        return;
       }
-    } else {
-      alert("Error: " + (data?.message ?? "Error al guardar"));
+
+      if (!date || !time || !finalDuration) {
+        alert("Por favor complete todos los campos.");
+        return;
+      }
+
+      // Determine start & end datetimes
+      const startDateTime = new Date(`${date}T${time}`);
+      const endDateTime = new Date(startDateTime.getTime() + Number(finalDuration) * 60000);
+
+      // Format to ISO local string without timezone (e.g. "2024-06-30T14:30")
+      const formatToISO = (d: Date) => d.toISOString();
+
+      const res = await fetch(`/api/appointment/${eventId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          description,
+          start: formatToISO(startDateTime),
+          end: formatToISO(endDateTime),
+          patientId: Number(patientId),
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        const link = data.whatsappLink as string | undefined;
+        if (link) {
+          setWhatsappLink(link);
+        } else {
+          router.push("/appointments");
+        }
+      } else {
+        alert("Error: " + (data?.message ?? "Error al guardar"));
+      }
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -269,10 +276,24 @@ export default function EditAppointmentPage() {
 
         <button
           type="submit"
-          disabled={loading}
-          className="bg-blue-600 text-white p-2 rounded disabled:opacity-50"
+          disabled={submitting}
+          className="
+          bg-blue-600 
+          hover:bg-blue-700 
+          transition-colors
+          text-white 
+          p-2 
+          rounded 
+          disabled:opacity-50 
+          disabled:cursor-not-allowed
+          flex 
+          justify-center 
+          items-center
+          active:scale-95
+          "
         >
-          {loading ? "Guardando..." : "Guardar Cambios"}
+          {submitting && <Loader />}
+          {submitting ? "Guardando..." : "Guardar Cambios"}
         </button>
       </form>
     </div>
