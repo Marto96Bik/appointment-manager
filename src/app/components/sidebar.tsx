@@ -23,7 +23,7 @@ export default function Sidebar() {
       {/* Botón hamburguesa, solo visible si el sidebar está cerrado */}
       {!open && (
         <button
-          className="fixed top-4 left-4 z-50 px-3.5 py-2.5 bg-white rounded shadow-md hover:bg-gray-100 transition-opacity duration-300"
+          className="fixed top-4 left-4 z-50 px-3.5 py-2.5 bg-white rounded shadow-md hover:bg-gray-200 transition-colors transition-opacity duration-300"
           onClick={() => setOpen(true)}
         >
           &#9776; {/* Tres barras */}

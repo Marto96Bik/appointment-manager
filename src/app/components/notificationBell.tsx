@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { WhatsAppLinkSuccess } from "./whatsapp-link-success";
+import { Check, X } from "lucide-react";
 import router from "next/router";
 
 interface Reminder {
@@ -20,6 +21,7 @@ export default function NotificationBell() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [confirmingId, setConfirmingId] = useState<number | null>(null);
 
   const [whatsappLink, setWhatsappLink] = useState<string | null>(null);
 
@@ -65,31 +67,38 @@ export default function NotificationBell() {
     };
   }, []);
 
-  const handleNotify = async (reminder: Reminder) => {
-    if (submitting) return; // Prevent double submission
-    setSubmitting(true);
+  const handleNotify = (reminder: Reminder) => {
+    const link = reminder.whatsappLink;
 
+    if (!link) {
+      setError("No se pudo generar el link de WhatsApp");
+      return;
+    }
+
+    window.open(link, "_blank");
+
+    setConfirmingId(reminder.id);
+  };
+
+  const confirmReminder = async (reminder: Reminder) => {
     try {
       const res = await fetch(`/api/reminders/${reminder.eventId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
       });
-      const data = await res.json().catch(() => ({}));
+
       if (res.ok) {
-        const link = data.whatsappLink as string | undefined;
-        if (link) {
-          setWhatsappLink(link);
-        } else {
-          setError(
-            "Error al redirigir al enlace de WhatsApp. Por favor avise al paciente manualmente.",
-          );
-        }
+        setReminders((prev) => prev.filter((r) => r.id !== reminder.id));
       } else {
-        alert("Error: " + (data?.message ?? "Error al notificar"));
+        alert("Error al confirmar el aviso");
       }
     } finally {
-      setSubmitting(false);
+      setConfirmingId(null);
     }
+  };
+
+  const cancelConfirmation = () => {
+    setConfirmingId(null);
   };
 
   if (loading) {
@@ -106,14 +115,11 @@ export default function NotificationBell() {
 
   if (whatsappLink) {
     return (
-      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
-        <h1 className="text-xl font-bold mb-4">Turno creado</h1>
-        <WhatsAppLinkSuccess
-          whatsappLink={whatsappLink}
-          onDone={() => router.push("/appointments")}
-          title="Link de WhatsApp para el paciente"
-        />
-      </div>
+      <WhatsAppLinkSuccess
+        whatsappLink={whatsappLink}
+        onDone={() => router.push("/appointments")}
+        title="Link de WhatsApp para el paciente"
+      />
     );
   }
 
@@ -123,7 +129,7 @@ export default function NotificationBell() {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="relative cursor-pointer p-3 bg-white text-black hover:bg-gray-200 shadow rounded-xl"
+        className="relative cursor-pointer p-3 bg-white text-black hover:bg-gray-200 transition-colors shadow rounded-2xl"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -141,7 +147,7 @@ export default function NotificationBell() {
         </svg>
 
         {reminders.length > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5">
+          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-sm rounded-full px-1.5">
             {reminders.length}
           </span>
         )}
@@ -156,18 +162,45 @@ export default function NotificationBell() {
             <div className="p-4 text-sm text-gray-500">No hay recordatorios</div>
           ) : (
             reminders.map((reminder) => (
-              <button
+              <div
                 key={reminder.id}
-                onClick={() => {
-                  handleNotify(reminder);
-                }}
                 className="w-full text-left px-4 py-3 hover:bg-gray-100 border-b last:border-none"
               >
-                <div className="font-medium">{reminder.patientFullName}</div>
-                <div className="text-sm text-gray-500">
-                  {new Date(reminder.start).toLocaleString()}
-                </div>
-              </button>
+                {confirmingId === reminder.id ? (
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm font-medium">¿Envió el aviso al paciente?</div>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => confirmReminder(reminder)}
+                        className="flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-700 hover:bg-green-600 hover:text-white transition"
+                      >
+                        <Check size={18} />
+                      </button>
+
+                      <button
+                        onClick={cancelConfirmation}
+                        className="flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-700 hover:bg-red-600 hover:text-white transition"
+                      >
+                        <X size={18} />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button onClick={() => handleNotify(reminder)} className="w-full text-left">
+                    <div className="font-medium">{reminder.patientFullName}</div>
+                    <div className="text-sm text-gray-500">
+                      {new Date(reminder.start).toLocaleString([], {
+                        year: "numeric",
+                        month: "numeric",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </div>
+                  </button>
+                )}
+              </div>
             ))
           )}
         </div>

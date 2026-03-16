@@ -3,8 +3,8 @@
 import "./globals.css";
 import { Roboto } from "next/font/google";
 import Sidebar from "./components/sidebar";
+import Header from "./components/header";
 import { usePathname } from "next/navigation";
-import NotificationBell from "./components/notificationBell";
 
 const roboto = Roboto({
   weight: ["300", "400", "500", "700"],
@@ -19,9 +19,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="es" className={`h-full bg-white ${roboto.variable}`}>
-      <body className="min-h-screen bg-gray-50 text-gray-900 antialiased">
+      <body className="min-h-screen bg-gray-50 text-gray-900 antialiased flex">
         {showSidebar && <Sidebar />}
-        {children}
+
+        <div className="flex-1 flex flex-col">
+          {showSidebar && <Header />}
+
+          <main className="flex-1 overflow-auto">{children}</main>
+        </div>
       </body>
     </html>
   );
