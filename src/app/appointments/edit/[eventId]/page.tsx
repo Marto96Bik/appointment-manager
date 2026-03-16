@@ -7,6 +7,7 @@ import Loader from "@/app/components/loader";
 import { Appointment, Patient } from "@prisma/client";
 import { fetchPatient, fetchPatients } from "@/app/clients/patient.client";
 import { fetchAppointment } from "@/app/clients/appointment.client";
+import AlertModal from "@/app/components/modals/alertModal";
 
 export default function EditAppointmentPage() {
   const router = useRouter();
@@ -29,6 +30,15 @@ export default function EditAppointmentPage() {
   const [error, setError] = useState<string | null>(null);
   const [whatsappLink, setWhatsappLink] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [showAlertModal, setShowAlertModal] = useState(false);
+
+  const [initialValues, setInitialValues] = useState({
+    date: "",
+    time: "",
+    duration: "",
+    customDuration: "",
+    patientId: 0,
+  });
 
   useEffect(() => {
     const loadData = async () => {
@@ -56,6 +66,14 @@ export default function EditAppointmentPage() {
         // Patients list for the dropdown
         const patients = await fetchPatients();
         setPatients(patients);
+
+        setInitialValues({
+          date: parseAppointmentDate(appointment.start, appointment.end).date,
+          time: parseAppointmentDate(appointment.start, appointment.end).time,
+          duration: "custom",
+          customDuration: parseAppointmentDate(appointment.start, appointment.end).duration,
+          patientId: appointment.patientId,
+        });
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -76,6 +94,16 @@ export default function EditAppointmentPage() {
     );
   }
 
+  const dataChanges = () => {
+    return (
+      date !== initialValues.date ||
+      time !== initialValues.time ||
+      duration !== initialValues.duration ||
+      customDuration !== initialValues.customDuration ||
+      patientId !== initialValues.patientId
+    );
+  };
+
   if (whatsappLink) {
     return (
       <div className="max-w-md mx-auto mt-10 rounded shadow">
@@ -88,10 +116,16 @@ export default function EditAppointmentPage() {
     );
   }
 
-  // Submit handler for updating the appointment
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveChanges = async () => {
+    if (!dataChanges()) {
+      router.push("/appointments");
+      return;
+    }
+    setShowAlertModal(true);
+  };
 
+  // Submit handler for updating the appointment
+  const handleSubmit = async () => {
     setSubmitting(true);
 
     try {
@@ -176,7 +210,7 @@ export default function EditAppointmentPage() {
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
       <h1 className="text-xl font-bold mb-4">Editar Turno</h1>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form className="flex flex-col gap-4">
         {/* Name */}
         <label>
           <span className="block text-sm font-medium">Nombre del evento</span>
@@ -274,9 +308,11 @@ export default function EditAppointmentPage() {
           />
         </label>
 
+        {/* Submit */}
         <button
-          type="submit"
+          type="button"
           disabled={submitting}
+          onClick={handleSaveChanges}
           className="
           bg-blue-600 
           hover:bg-blue-700 
@@ -296,6 +332,20 @@ export default function EditAppointmentPage() {
           {submitting ? "Guardando..." : "Guardar Cambios"}
         </button>
       </form>
+
+      {/* MODAL DE ADVERTENCIA */}
+      <AlertModal
+        isOpen={showAlertModal}
+        title="¿Guardar cambios en el turno?"
+        description="Se actualizarán los datos del turno. Esta acción no se puede deshacer."
+        confirmText="Guardar Cambios"
+        cancelText="Cancelar"
+        onConfirm={async () => {
+          setShowAlertModal(false);
+          await handleSubmit();
+        }}
+        onCancel={() => setShowAlertModal(false)}
+      />
     </div>
   );
 }
