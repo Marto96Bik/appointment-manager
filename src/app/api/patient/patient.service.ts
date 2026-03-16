@@ -48,6 +48,9 @@ export async function getPatientsList(userId: number, filters: getPatientDTO) {
         phone: filters.phone || undefined,
         documentId: filters.documentId || undefined,
       },
+      orderBy: {
+        id: "asc",
+      },
     });
 
     return patients;

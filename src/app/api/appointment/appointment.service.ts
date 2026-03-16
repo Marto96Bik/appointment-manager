@@ -84,6 +84,9 @@ export async function getAppointments(userId: number, params: GetAppointmentDTO)
           end: { lte: new Date(end) },
         }),
       },
+      orderBy: {
+        id: "asc",
+      },
     });
     return appointments;
   } catch (error) {
@@ -228,6 +231,9 @@ export async function findAppointmentsToRemind() {
       start: { gte: now, lte: in36Hours },
       reminderSent: false,
     },
+    orderBy: {
+      id: "asc",
+    },
   });
 }
 
@@ -253,6 +259,9 @@ export async function findAppointmentReminderPending(userId: number) {
           userId: true,
         },
       },
+    },
+    orderBy: {
+      id: "asc",
     },
   });
 
