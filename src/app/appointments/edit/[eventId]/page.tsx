@@ -116,11 +116,24 @@ export default function EditAppointmentPage() {
     );
   }
 
-  const handleSaveChanges = async () => {
+  const handleSaveChanges = () => {
+    const finalDuration = duration === "custom" ? customDuration : duration;
+
+    if (!name || !date || !time || !finalDuration || patientId === 0 || !description) {
+      alert("Por favor complete todos los campos.");
+      return;
+    }
+
+    if (Number(finalDuration) < 10) {
+      alert("Duración inválida. Debe ser al menos 10 minutos.");
+      return;
+    }
+
     if (!dataChanges()) {
       router.push("/appointments");
       return;
     }
+
     setShowAlertModal(true);
   };
 
@@ -130,16 +143,6 @@ export default function EditAppointmentPage() {
 
     try {
       const finalDuration = duration === "custom" ? customDuration : duration;
-
-      if (Number(finalDuration) < 10) {
-        alert("Duración inválida");
-        return;
-      }
-
-      if (!date || !time || !finalDuration) {
-        alert("Por favor complete todos los campos.");
-        return;
-      }
 
       // Determine start & end datetimes
       const startDateTime = new Date(`${date}T${time}`);
