@@ -20,10 +20,7 @@ export default function NotificationBell() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
   const [confirmingId, setConfirmingId] = useState<number | null>(null);
-
-  const [whatsappLink, setWhatsappLink] = useState<string | null>(null);
 
   async function loadReminders() {
     setLoading(true);
@@ -111,16 +108,6 @@ export default function NotificationBell() {
 
   if (error) {
     return <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">Error: {error}</div>;
-  }
-
-  if (whatsappLink) {
-    return (
-      <WhatsAppLinkSuccess
-        whatsappLink={whatsappLink}
-        onDone={() => router.push("/appointments")}
-        title="Link de WhatsApp para el paciente"
-      />
-    );
   }
 
   return (
