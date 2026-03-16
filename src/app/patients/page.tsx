@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, Pencil, PlusIcon, Trash2 } from "lucide-react";
 import Loader from "../components/loader";
+import AlertModal from "../components/modals/alertModal";
 
 interface Patient {
   id: number;
@@ -19,7 +20,6 @@ export default function PatientsPage() {
   const router = useRouter();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [showNoPatientsModal, setShowNoPatientsModal] = useState(false);
   const [selectedPatientId, setSelectedPatientId] = useState<number | null>(null);
 
   const [loading, setLoading] = useState(false);
@@ -45,8 +45,6 @@ export default function PatientsPage() {
   }, []);
 
   const handleDelete = async (id: number) => {
-    setShowNoPatientsModal(true);
-
     try {
       setIsDeleting(true);
       const res = await fetch(`/api/patient/${id}`, { method: "DELETE" });
@@ -58,7 +56,6 @@ export default function PatientsPage() {
     } finally {
       setIsDeleting(false);
       setSelectedPatientId(null);
-      setShowNoPatientsModal(false);
     }
   };
 
@@ -109,7 +106,6 @@ export default function PatientsPage() {
                 <button
                   onClick={() => {
                     setSelectedPatientId(p.id);
-                    setShowNoPatientsModal(true);
                   }}
                   disabled={isDeleting}
                   className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-30"
@@ -138,45 +134,17 @@ export default function PatientsPage() {
       </button>
 
       {/* MODAL DE ADVERTENCIA */}
-      {selectedPatientId && showNoPatientsModal && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-          onClick={() => {
-            setShowNoPatientsModal(false);
-            setSelectedPatientId(null);
-          }}
-        >
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-200">
-            <div className="flex flex-col items-center text-center">
-              <div className="bg-amber-100 p-3 rounded-full mb-4">
-                <svg
-                  className="w-8 h-8 text-amber-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
-                ¿Está seguro de que desea eliminar este paciente?
-              </h3>
-              <p className="text-gray-600 mb-5">Esta acción no se puede deshacer.</p>
-              <button
-                onClick={() => selectedPatientId && handleDelete(selectedPatientId)}
-                className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition active:scale-95 shadow-lg shadow-red-200"
-              >
-                Eliminar Paciente
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AlertModal
+        isOpen={!!selectedPatientId}
+        title="¿Está seguro de que desea eliminar este paciente?"
+        description="Esta acción no se puede deshacer."
+        confirmText="Eliminar Paciente"
+        cancelText="Cancelar"
+        onConfirm={() => selectedPatientId && handleDelete(selectedPatientId)}
+        onCancel={() => {
+          setSelectedPatientId(null);
+        }}
+      />
     </div>
   );
 }
