@@ -22,7 +22,6 @@ export default function EditAppointmentPage() {
   const [time, setTime] = useState("");
   const [duration, setDuration] = useState("30");
   const [customDuration, setCustomDuration] = useState("");
-  const [finalDuration, setFinalDuration] = useState("custom");
   const [patientId, setPatientId] = useState(0);
   const [patients, setPatients] = useState<Patient[]>([]);
 
@@ -92,10 +91,11 @@ export default function EditAppointmentPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (duration === "custom") {
-      setFinalDuration(customDuration);
-    } else {
-      setFinalDuration(duration);
+    const finalDuration = duration === "custom" ? customDuration : duration;
+
+    if (Number(finalDuration) < 10) {
+      alert("Duración inválida");
+      return;
     }
 
     if (!date || !time || !finalDuration) {
@@ -108,7 +108,7 @@ export default function EditAppointmentPage() {
     const endDateTime = new Date(startDateTime.getTime() + Number(finalDuration) * 60000);
 
     // Format to ISO local string without timezone (e.g. "2024-06-30T14:30")
-    const formatToISO = (d: Date) => d.toLocaleString("sv").replace(" ", "T");
+    const formatToISO = (d: Date) => d.toISOString();
 
     const res = await fetch(`/api/appointment/${eventId}`, {
       method: "PATCH",

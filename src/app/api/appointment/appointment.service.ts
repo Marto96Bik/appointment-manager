@@ -147,6 +147,7 @@ export async function updateAppointment(
         end: endDate,
         name: data.name !== undefined ? data.name : appointment.name,
         description: data.description !== undefined ? data.description : appointment.description,
+        patientId: data.patientId !== undefined ? data.patientId : appointment.patientId,
       },
     });
 
