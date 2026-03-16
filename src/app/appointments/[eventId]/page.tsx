@@ -185,7 +185,7 @@ export default function InfoAppointmentPage() {
         {/* MODAL DE ADVERTENCIA */}
         <AlertModal
           isOpen={showDeleteModal}
-          title="¿Estás seguro de eliminar este turno?"
+          title="¿Está seguro de eliminar el turno?"
           description="Esta acción no se puede deshacer."
           confirmText="Eliminar"
           cancelText="Cancelar"
