@@ -6,6 +6,7 @@ import Loader from "@/app/components/loader";
 import { Appointment, Patient } from "@prisma/client";
 import { fetchAppointment } from "@/app/clients/appointment.client";
 import { fetchPatient } from "@/app/clients/patient.client";
+import AlertModal from "@/app/components/modals/alertModal";
 
 export default function InfoAppointmentPage() {
   const router = useRouter();
@@ -16,6 +17,8 @@ export default function InfoAppointmentPage() {
   const [patient, setPatient] = useState<Patient | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -71,15 +74,10 @@ export default function InfoAppointmentPage() {
   };
 
   const handleDelete = async () => {
-    if (loading) return;
-
-    const confirmed = window.confirm("¿Estás seguro de que deseas eliminar este turno?");
-
-    if (!confirmed) return;
+    if (!appointment) return;
 
     try {
       setLoading(true);
-      setError("");
 
       const res = await fetch(`/api/appointment/${appointment.eventId}`, {
         method: "DELETE",
@@ -94,6 +92,7 @@ export default function InfoAppointmentPage() {
       setError(err.message || "No se pudo eliminar el registro");
     } finally {
       setLoading(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -163,7 +162,7 @@ export default function InfoAppointmentPage() {
           <div className="flex-1">
             <button
               className="w-full bg-red-50 text-red-600 hover:bg-red-100 font-semibold p-2.5 rounded-lg border border-red-200 transition-all flex items-center justify-center gap-2"
-              onClick={handleDelete}
+              onClick={() => setShowDeleteModal(true)}
             >
               <svg
                 xmlns="http://www.w3.org"
@@ -183,6 +182,16 @@ export default function InfoAppointmentPage() {
             </button>
           </div>
         </div>
+        {/* MODAL DE ADVERTENCIA */}
+        <AlertModal
+          isOpen={showDeleteModal}
+          title="¿Estás seguro de eliminar este turno?"
+          description="Esta acción no se puede deshacer."
+          confirmText="Eliminar"
+          cancelText="Cancelar"
+          onConfirm={handleDelete}
+          onCancel={() => setShowDeleteModal(false)}
+        />
       </div>
     </div>
   );
