@@ -8,6 +8,7 @@ import { Appointment, Patient } from "@prisma/client";
 import { fetchPatient, fetchPatients } from "@/app/clients/patient.client";
 import { fetchAppointment } from "@/app/clients/appointment.client";
 import AlertModal from "@/app/components/modals/alertModal";
+import ErrorModal from "@/app/components/modals/errorModal";
 
 export default function EditAppointmentPage() {
   const router = useRouter();
@@ -31,6 +32,8 @@ export default function EditAppointmentPage() {
   const [whatsappLink, setWhatsappLink] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showAlertModal, setShowAlertModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const [initialValues, setInitialValues] = useState({
     date: "",
@@ -120,12 +123,14 @@ export default function EditAppointmentPage() {
     const finalDuration = duration === "custom" ? customDuration : duration;
 
     if (!name || !date || !time || !finalDuration || patientId === 0 || !description) {
-      alert("Por favor complete todos los campos.");
+      setErrorMessage("Por favor complete todos los campos.");
+      setShowErrorModal(true);
       return;
     }
 
     if (Number(finalDuration) < 10) {
-      alert("Duración inválida. Debe ser al menos 10 minutos.");
+      setErrorMessage("Duración inválida. Debe ser al menos 10 minutos.");
+      setShowErrorModal(true);
       return;
     }
 
@@ -348,6 +353,12 @@ export default function EditAppointmentPage() {
           await handleSubmit();
         }}
         onCancel={() => setShowAlertModal(false)}
+      />
+      <ErrorModal
+        isOpen={showErrorModal}
+        title="Error en el formulario"
+        message={errorMessage}
+        onClose={() => setShowErrorModal(false)}
       />
     </div>
   );
