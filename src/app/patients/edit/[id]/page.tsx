@@ -143,7 +143,7 @@ export default function EditPatientPage() {
 
   return (
     <div className="max-w-xl mx-auto mt-10 p-8 bg-white shadow-xl rounded-2xl border border-gray-100 font-sans">
-      <h1 className="text-3xl font-extrabold mb-8 text-gray-800 tracking-tight">Crear Paciente</h1>
+      <h1 className="text-3xl font-extrabold mb-8 text-gray-800 tracking-tight">Editar Paciente</h1>
 
       {error && (
         <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6 text-sm font-medium border border-red-100 animate-pulse">
