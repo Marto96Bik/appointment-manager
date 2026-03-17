@@ -76,6 +76,7 @@ export async function getAppointments(userId: number, params: GetAppointmentDTO)
     const appointments = await prisma.appointment.findMany({
       where: {
         userId,
+        deletedAt: null,
         ...(patientId && { patientId }),
         ...(start && {
           start: { gte: new Date(start) },
@@ -102,6 +103,11 @@ export async function getAppointmentByEventId(userId: number, eventId: string) {
         eventId,
       },
     });
+
+    if (appointment!.deletedAt) {
+      throw new AppError("Appointment deleted", 410);
+    }
+
     return appointment;
   } catch (error) {
     handlePrismaError(error);
@@ -113,8 +119,14 @@ export async function getAppointmentById(userId: number, id: number) {
     const appointment = await prisma.appointment.findFirst({
       where: {
         id,
+        userId,
       },
     });
+
+    if (appointment!.deletedAt) {
+      throw new AppError("Appointment deleted", 410);
+    }
+
     return appointment;
   } catch (error) {
     handlePrismaError(error);
@@ -183,13 +195,15 @@ export async function deleteAppointment(userId: number, eventId: string) {
     // Validate ownership and existence, and return appointment
     const appointment = await validateBeforeEdit(userId, eventId);
 
-    // FInd patient for notification
+    // Find patient for notification
     const patient = await getPatientById(userId, appointment.patientId);
 
-    // DB delete
-    // TODO soft delete to keep record of past appointments and avoid issues with Google Calendar sync
-    await prisma.appointment.delete({
+    // DB soft delete to keep record of past appointments and avoid issues with Google Calendar sync
+    await prisma.appointment.update({
       where: { eventId },
+      data: {
+        deletedAt: new Date(),
+      },
     });
 
     // Google Calendar delete
@@ -309,6 +323,10 @@ export async function validateBeforeEdit(userId: number, eventId: string): Promi
 
   if (!appointment) {
     throw new AppError("Appointment not found", 404);
+  }
+
+  if (appointment.deletedAt) {
+    throw new AppError("Appointment deleted", 410);
   }
 
   if (appointment.userId !== userId) {

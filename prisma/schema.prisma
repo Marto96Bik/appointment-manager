@@ -24,6 +24,8 @@ model User {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
+  deletedAt    DateTime?
+
   patients     Patient[]
   appointments Appointment[]
 }
@@ -61,6 +63,8 @@ model Appointment {
   reminderSent    Boolean   @default(false)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+
+  deletedAt       DateTime?
 
   patient Patient @relation(fields: [patientId], references: [id])
   user    User    @relation(fields: [userId], references: [id])
