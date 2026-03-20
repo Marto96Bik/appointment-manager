@@ -112,8 +112,12 @@ export async function validatePatientOwnership(userId: number, patientId: number
     where: { id: patientId },
   });
 
-  if (!patient || patient.deletedAt) {
-    throw new AppError("Patient not found or deleted", 404);
+  if (!patient) {
+    throw new AppError("Patient not found", 404);
+  }
+
+  if (patient.deletedAt) {
+    throw new AppError("Patient deleted", 410);
   }
 
   if (patient.userId !== userId) {
