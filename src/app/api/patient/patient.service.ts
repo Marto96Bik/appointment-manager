@@ -29,7 +29,7 @@ export async function createPatient(userId: number, data: CreatePatientDTO) {
 
 export async function getPatientById(userId: number, patientId: number) {
   try {
-    return validatePatientOwnership(userId, patientId);
+    return validatePatientOwnership(userId, patientId, false);
   } catch (error) {
     handlePrismaError(error);
   }
@@ -61,7 +61,7 @@ export async function getPatientsList(userId: number, filters: getPatientDTO) {
 
 export async function updatePatient(userId: number, patientId: number, data: patchPatientDTO) {
   try {
-    const patient = await validatePatientOwnership(userId, patientId);
+    const patient = await validatePatientOwnership(userId, patientId, true);
 
     const updatedPatient = await prisma.patient.update({
       where: {
@@ -83,7 +83,7 @@ export async function updatePatient(userId: number, patientId: number, data: pat
 
 export async function deletePatient(userId: number, patientId: number) {
   try {
-    const patient = await validatePatientOwnership(userId, patientId);
+    const patient = await validatePatientOwnership(userId, patientId, true);
 
     await prisma.patient.update({
       where: { id: patientId },
@@ -107,7 +107,11 @@ async function patientExists(userId: number, documentId: string) {
   return patient;
 }
 
-export async function validatePatientOwnership(userId: number, patientId: number) {
+export async function validatePatientOwnership(
+  userId: number,
+  patientId: number,
+  filterDeleted: boolean,
+) {
   const patient = await prisma.patient.findUnique({
     where: { id: patientId },
   });
@@ -116,7 +120,7 @@ export async function validatePatientOwnership(userId: number, patientId: number
     throw new AppError("Patient not found", 404);
   }
 
-  if (patient.deletedAt) {
+  if (filterDeleted && patient.deletedAt) {
     throw new AppError("Patient deleted", 410);
   }
 
