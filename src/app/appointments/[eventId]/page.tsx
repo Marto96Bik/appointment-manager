@@ -103,9 +103,8 @@ export default function InfoAppointmentPage() {
           setShowErrorModal(true);
           return;
         }
-
-        router.push("/appointments");
-        router.refresh();
+      } else {
+        alert("Error: " + (data?.message ?? "Error al eliminar el turno"));
       }
     } catch (err: any) {
       setError(err.message || "No se pudo eliminar el registro");
