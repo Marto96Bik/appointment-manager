@@ -6,21 +6,14 @@ import { useRouter } from "next/navigation";
 import { Eye, Pencil, PlusIcon, Trash2 } from "lucide-react";
 import Loader from "../components/loader";
 import AlertModal from "../components/modals/alertModal";
-
-interface Patient {
-  id: number;
-  name: string;
-  lastname: string;
-  phone: string;
-  documentId: string;
-  userId: number;
-}
+import { Patient } from "@prisma/client";
 
 export default function PatientsPage() {
   const router = useRouter();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
   const [selectedPatientId, setSelectedPatientId] = useState<number | null>(null);
+  const [search, setSearch] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -43,6 +36,17 @@ export default function PatientsPage() {
 
     fetchPatients();
   }, []);
+
+  const filteredPatients = patients.filter((p) => {
+    const searchValue = normalizeText(search);
+
+    return (
+      normalizeText(p.name).includes(searchValue) ||
+      normalizeText(p.lastname).includes(searchValue) ||
+      normalizeText(p.documentId).includes(searchValue) ||
+      normalizeText(p.phone).includes(searchValue)
+    );
+  });
 
   const handleDelete = async (id: number) => {
     try {
@@ -75,9 +79,17 @@ export default function PatientsPage() {
     <div className="p-4 max-w-2xl mx-auto pb-32">
       <h1 className="text-2xl font-bold mb-6 text-slate-800">Pacientes</h1>
 
-      {patients.length > 0 ? (
+      <input
+        type="text"
+        placeholder="Buscar por nombre, apellido, documento o teléfono..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="w-full mb-4 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+
+      {filteredPatients.length > 0 ? (
         <ul className="space-y-3">
-          {patients.map((p) => (
+          {filteredPatients.map((p) => (
             <li
               key={p.id}
               className="group flex items-center justify-between p-4 border border-slate-200 rounded-xl bg-white hover:shadow-md transition-all"
@@ -116,6 +128,8 @@ export default function PatientsPage() {
             </li>
           ))}
         </ul>
+      ) : patients.length > 0 ? (
+        <p className="text-slate-500">No se encontraron pacientes con ese criterio</p>
       ) : (
         <div className="py-10">
           <p className="text-black text-base mb-6">
@@ -147,4 +161,8 @@ export default function PatientsPage() {
       />
     </div>
   );
+}
+
+function normalizeText(text: string): string {
+  return text.toLowerCase().trim();
 }
