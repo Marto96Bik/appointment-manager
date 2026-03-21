@@ -258,6 +258,7 @@ export async function findAppointmentReminderPending(userId: number) {
   const appointments = await prisma.appointment.findMany({
     where: {
       userId,
+      deletedAt: null,
       reminderPending: true,
     },
     select: {
