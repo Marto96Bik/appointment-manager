@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { WhatsAppLinkSuccess } from "@/app/components/whatsapp-link-success";
 import Loader from "@/app/components/loader";
 import { Appointment, Patient } from "@prisma/client";
 import { fetchAppointment } from "@/app/clients/appointment.client";
 import { fetchPatient } from "@/app/clients/patient.client";
 import AlertModal from "@/app/components/modals/alertModal";
+import ErrorModal from "@/app/components/modals/errorModal";
 
 export default function InfoAppointmentPage() {
   const router = useRouter();
@@ -18,7 +20,10 @@ export default function InfoAppointmentPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [whatsappLink, setWhatsappLink] = useState<string | null>(null);
+  const [showAlertModal, setShowAlertModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const loadData = async () => {
@@ -84,17 +89,44 @@ export default function InfoAppointmentPage() {
         credentials: "include",
       });
 
-      if (!res.ok) throw new Error("Error al eliminar el turno");
+      const data = await res.json().catch(() => ({}));
 
-      router.push("/appointments");
-      router.refresh();
+      if (res.ok) {
+        const link = data.whatsappLink as string;
+
+        if (link) {
+          setWhatsappLink(link);
+        } else {
+          setErrorMessage(
+            "El sistema no logró redirigir a WhatsApp. Notifique al paciente de la operación realizada. Contacte a soporte por el problema",
+          );
+          setShowErrorModal(true);
+          return;
+        }
+
+        router.push("/appointments");
+        router.refresh();
+      }
     } catch (err: any) {
       setError(err.message || "No se pudo eliminar el registro");
     } finally {
       setLoading(false);
-      setShowDeleteModal(false);
+      setShowAlertModal(false);
     }
   };
+
+  if (whatsappLink) {
+    return (
+      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
+        <h1 className="text-xl font-bold mb-4">Turno creado</h1>
+        <WhatsAppLinkSuccess
+          whatsappLink={whatsappLink}
+          onDone={() => router.push("/appointments")}
+          title="Link de WhatsApp para el paciente"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
@@ -162,7 +194,7 @@ export default function InfoAppointmentPage() {
           <div className="flex-1">
             <button
               className="w-full bg-red-50 text-red-600 hover:bg-red-100 font-semibold p-2.5 rounded-lg border border-red-200 transition-all flex items-center justify-center gap-2"
-              onClick={() => setShowDeleteModal(true)}
+              onClick={() => setShowAlertModal(true)}
             >
               <svg
                 xmlns="http://www.w3.org"
@@ -184,13 +216,22 @@ export default function InfoAppointmentPage() {
         </div>
         {/* MODAL DE ADVERTENCIA */}
         <AlertModal
-          isOpen={showDeleteModal}
+          isOpen={showAlertModal}
           title="¿Está seguro de eliminar el turno?"
           description="Esta acción no se puede deshacer."
           confirmText="Eliminar"
           cancelText="Cancelar"
           onConfirm={handleDelete}
-          onCancel={() => setShowDeleteModal(false)}
+          onCancel={() => setShowAlertModal(false)}
+        />
+        <ErrorModal
+          isOpen={showErrorModal}
+          title="Error en la operación"
+          message={errorMessage}
+          onClose={() => {
+            setShowErrorModal(false);
+            router.push("/appointments");
+          }}
         />
       </div>
     </div>
