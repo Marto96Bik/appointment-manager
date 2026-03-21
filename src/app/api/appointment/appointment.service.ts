@@ -215,7 +215,7 @@ export async function deleteAppointment(userId: number, eventId: string) {
     const whatsappLink = await sendNotification(
       patient,
       appointment,
-      "update",
+      "delete",
       `${professional!.name} ${professional!.lastname}`,
     );
 
