@@ -212,14 +212,14 @@ export async function deleteAppointment(userId: number, eventId: string) {
 
     const professional = await findUserByUserId(userId);
     // Generate wa.link notification link
-    await sendNotification(
+    const whatsappLink = await sendNotification(
       patient,
       appointment,
-      "delete",
+      "update",
       `${professional!.name} ${professional!.lastname}`,
     );
 
-    return appointment;
+    return { appointment, whatsappLink };
   } catch (error) {
     handlePrismaError(error);
   }
