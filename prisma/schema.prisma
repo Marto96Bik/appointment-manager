@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  name         String
+  lastname     String
+  email        String    @unique
+  phone        String?   @unique
+  googleId     String    @unique
+  sid          String?
+  refreshToken String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  deletedAt    DateTime?
+
+  patients     Patient[]
+  appointments Appointment[]
+}
+
+model Patient {
+  id         Int       @id @default(autoincrement())
+  name       String
+  lastname   String
+  phone      String
+  documentId String
+  userId     Int
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  deletedAt DateTime?
+
+  user        User        @relation(fields: [userId], references: [id])
+  appointments Appointment[]
+
+  @@unique([userId, documentId])
+  @@index([userId])
+  @@index([userId, phone])
+}
+
+model Appointment {
+  id              Int      @id @default(autoincrement())
+  name            String?
+  description     String?
+  start           DateTime
+  end             DateTime
+  eventId         String    @unique
+  patientId       Int
+  userId          Int
+  reminderPending Boolean   @default(false)
+  reminderSent    Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  deletedAt       DateTime?
+
+  patient Patient @relation(fields: [patientId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+}

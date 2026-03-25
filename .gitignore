@@ -1,5 +1,8 @@
-# Carpetas locales personales / pruebas
+# Local development files
 previo/
+
+# Local config files
+.vscode/
 
 # dependencies
 /node_modules
@@ -35,3 +38,4 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+/src/generated/prisma

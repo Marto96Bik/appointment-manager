@@ -1,19 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPatientById } from "../patient.service";
+import { patchPatientSchema } from "@/schema/patient.schema";
+import { deletePatient, updatePatient, getPatientById } from "../patient.service";
+import { verifySession } from "../../auth/auth.service";
+import { routeErrorHandler } from "@/lib/errors/routeErrorHandler";
 
-export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
-  const { id } = await context.params;
-  const numericId = parseInt(id, 10);
+export const GET = routeErrorHandler(
+  async (req: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
+    const userId = await verifySession(req);
+    const resolvedParams = await params;
+    const patientId = Number(resolvedParams.id);
 
-  if (isNaN(numericId)) {
-    return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
-  }
+    const patient = await getPatientById(userId, patientId);
+    return NextResponse.json(patient, { status: 200 });
+  },
+);
 
-  const patient = getPatientById(numericId);
+export const PATCH = routeErrorHandler(
+  async (req: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
+    const userId = await verifySession(req);
+    const resolvedParams = await params;
+    const patientId = Number(resolvedParams.id);
 
-  if (!patient) {
-    return NextResponse.json({ error: "Patient not found" }, { status: 404 });
-  }
+    const data = await req.json();
+    patchPatientSchema.parse(data);
 
-  return NextResponse.json(patient);
-}
+    const patient = await updatePatient(userId, patientId, data);
+    return NextResponse.json(patient, { status: 200 });
+  },
+);
+
+export const DELETE = routeErrorHandler(
+  async (req: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
+    const userId = await verifySession(req);
+    const resolvedParams = await params;
+    const patientId = Number(resolvedParams.id);
+
+    const patient = await deletePatient(userId, patientId);
+    return NextResponse.json(patient, { status: 200 });
+  },
+);
