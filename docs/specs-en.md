@@ -20,7 +20,7 @@ Responsive web app for simple patient appointment management with Google Calenda
 - **Frontend**: Next.js + Tailwind + FullCalendar
 - **Backend**: Next.js + PostgreSQL
 - **Auth**: Google OAuth
-- **Notifications**: Twilio WhatsApp API
+- **Notifications**: WA.Link redirects to WhatsApp
 - **Calendar**: Google Calendar API
 
 ## MVP Scope
@@ -63,9 +63,9 @@ Responsive web app for simple patient appointment management with Google Calenda
 - Edit: click event → update details → on confirm → patient WhatsApp update notification.
 - Delete: click event → cancel → on confirm → patient WhatsApp cancel notification.
 
-### Notifications
+### Notifications (WhatsApp)
 
-- WhatsApp via Twilio: Appointment set, update or cancel.
+- Appointment set, update or cancel.
 - Automatic 24h reminder before appointment (cron job).
 
 ## Non-Functional

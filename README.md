@@ -18,7 +18,7 @@ Intiuitive design for users with limited technical knowledge.
 - Interactive calendar (FullCalendar)
 - PostgreSQL integration with Prisma ORM
 - Google Calendar sync
-- WhatsApp notifications (Twilio)
+- WhatsApp notifications (WA.Link)
 
 ### Notification Flows
 
@@ -37,7 +37,7 @@ Intiuitive design for users with limited technical knowledge.
 - **ORM**: Prisma
 - **Styling**: Tailwind CSS
 - **Calendar UI**: FullCalendar
-- **Notifications**: Twilio WhatsApp API
+- **Notifications**: WA.Link redirects to WhatsApp
 - **Calendar Sync**: Google Calendar API
 
 ---
@@ -180,7 +180,7 @@ Detailed specs and scope: [docs/specs.md](./docs/specs.md)
 - Validates input data
 - Creates Google Calendar event
 - Stores appointment with eventId
-- Sends WhatsApp confirmation via Twilio
+- Sends WhatsApp confirmation via WA.Link
 
 #### Get all appointments
 
@@ -233,7 +233,7 @@ Detailed specs and scope: [docs/specs.md](./docs/specs.md)
 - Validates input data
 - Creates Google Calendar event
 - Stores appointment with eventId
-- Sends WhatsApp confirmation via Twilio
+- Sends WhatsApp confirmation via WA.Link
 
 #### Get all appointments
 
