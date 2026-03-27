@@ -104,6 +104,10 @@ async function patientExists(userId: number, documentId: string) {
     },
   });
 
+  if (!patient) {
+    throw new AppError("Patient not found", 404);
+  }
+
   return patient;
 }
 

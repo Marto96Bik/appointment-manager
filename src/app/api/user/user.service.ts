@@ -1,6 +1,7 @@
 import { handlePrismaError } from "@/lib/errors/prismaErrorHandler";
 import { CreateUserDto, UpdateUserDto } from "@/schema/user.schema";
 import prisma from "@/lib/database/prisma";
+import { AppError } from "@/lib/errors/appCustomError";
 
 /* Create */
 export function createUser(data: CreateUserDto) {
@@ -14,9 +15,13 @@ export function createUser(data: CreateUserDto) {
 /* Read */
 export async function findUserByUserId(userId: number) {
   try {
-    return await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: userId },
     });
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+    return user;
   } catch (error) {
     handlePrismaError(error);
   }
@@ -24,9 +29,13 @@ export async function findUserByUserId(userId: number) {
 
 export async function findUserByGoogleId(googleId: string) {
   try {
-    return await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { googleId },
     });
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+    return user;
   } catch (error: any) {
     handlePrismaError(error);
   }

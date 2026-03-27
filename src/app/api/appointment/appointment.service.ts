@@ -104,7 +104,11 @@ export async function getAppointmentByEventId(userId: number, eventId: string) {
       },
     });
 
-    if (appointment!.deletedAt) {
+    if (!appointment) {
+      throw new AppError("Appointment not found", 404);
+    }
+
+    if (appointment.deletedAt) {
       throw new AppError("Appointment deleted", 410);
     }
 
@@ -123,7 +127,11 @@ export async function getAppointmentById(userId: number, id: number) {
       },
     });
 
-    if (appointment!.deletedAt) {
+    if (!appointment) {
+      throw new AppError("Appointment not found", 404);
+    }
+
+    if (appointment.deletedAt) {
       throw new AppError("Appointment deleted", 410);
     }
 
