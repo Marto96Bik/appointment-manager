@@ -1,6 +1,6 @@
 "use client";
-export const dynamic = "force-dynamic";
 
+import { Suspense } from "react";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { WhatsAppLinkSuccess } from "@/app/components/whatsapp-link-success";
@@ -152,160 +152,178 @@ export default function CreateAppointmentPage() {
     );
   }
 
+  const handleLoading = () => {
+    return (
+      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
+        <h1 className="text-xl font-bold mb-4">Asignar Turno</h1>
+        <Loader />
+      </div>
+    );
+  };
+
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
-      <h1 className="text-xl font-bold mb-4">Asignar Turno</h1>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        {/* Name */}
-        <label>
-          <span className="block text-sm font-medium">Nombre del evento</span>
-          <input
-            type="text"
-            placeholder="Turno con ..."
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="border rounded px-2 py-1 w-full"
-          />
-        </label>
-
-        {/* Date & Time */}
-        <div className="flex gap-4">
-          <div className="flex-1">
-            <label className="block text-sm font-medium">Fecha</label>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="border rounded px-2 py-1 w-full"
-              required
-            />
-          </div>
-          <div className="flex-1">
-            <label className="block text-sm font-medium">Hora</label>
-            <input
-              type="time"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              className="border rounded px-2 py-1 w-full"
-              required
-            />
-          </div>
+    <Suspense
+      fallback={
+        <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
+          <h1 className="text-xl font-bold mb-4">Asignar Turno</h1>
+          <Loader />
         </div>
-
-        {/* Duration */}
-        <div className="flex gap-4 items-end">
-          <div className="flex-1">
-            <label className="block text-sm font-medium">Duración</label>
-            <select
-              value={duration}
-              onChange={(e) => setDuration(e.target.value)}
+      }
+    >
+      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
+        <h1 className="text-xl font-bold mb-4">Asignar Turno</h1>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          {/* Name */}
+          <label>
+            <span className="block text-sm font-medium">Nombre del evento</span>
+            <input
+              type="text"
+              placeholder="Turno con ..."
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
               className="border rounded px-2 py-1 w-full"
-            >
-              <option value="15">15 min</option>
-              <option value="30">30 min</option>
-              <option value="45">45 min</option>
-              <option value="60">1 hora</option>
-              <option value="custom">Personalizado...</option>
-            </select>
-          </div>
+            />
+          </label>
 
-          {duration === "custom" && (
+          {/* Date & Time */}
+          <div className="flex gap-4">
             <div className="flex-1">
+              <label className="block text-sm font-medium">Fecha</label>
               <input
-                type="number"
-                placeholder="Minutos"
-                value={customDuration}
-                onChange={(e) => setCustomDuration(e.target.value)}
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
                 className="border rounded px-2 py-1 w-full"
                 required
               />
             </div>
-          )}
-        </div>
-
-        {/* Pacient */}
-        <label>
-          <span className="block text-sm font-medium">Paciente</span>
-          <select
-            value={patientId}
-            onChange={(e) => handlePatientChange(Number(e.target.value))}
-            className="border rounded px-2 py-1 w-full"
-          >
-            <option value={0} disabled>
-              Seleccione un paciente
-            </option>
-            {patients.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name} {p.lastname}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        {/* Description */}
-        <label>
-          <span className="block text-sm font-medium">Descripción</span>
-          <textarea
-            placeholder="Notas adicionales sobre el turno"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="border rounded px-2 py-1 w-full"
-            rows={3}
-          />
-        </label>
-
-        <button
-          type="submit"
-          disabled={submitting}
-          className="bg-blue-600 text-white px-4 py-2 mt-2 rounded hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {submitting ? "Creando..." : "Asignar Turno"}
-        </button>
-      </form>
-
-      {/* Advert Modal */}
-      {showNoPatientsModal && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-          onClick={() => {
-            setShowNoPatientsModal(false);
-            router.push("/appointments");
-          }}
-        >
-          <div
-            className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-200"
-            onClick={(e) => e.stopPropagation()} // Evita que el click en el modal cierre el modal
-          >
-            <div className="flex flex-col items-center text-center">
-              <div className="bg-amber-100 p-3 rounded-full mb-4">
-                <svg
-                  className="w-8 h-8 text-amber-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">No tienes pacientes</h3>
-              <p className="text-gray-600 mb-6">
-                Para crear un turno, primero debes dar de alta al menos un paciente en el sistema.
-              </p>
-              <button
-                onClick={handleNoPatients}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition active:scale-95 shadow-lg shadow-blue-200"
-              >
-                Crear mi primer paciente
-              </button>
+            <div className="flex-1">
+              <label className="block text-sm font-medium">Hora</label>
+              <input
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="border rounded px-2 py-1 w-full"
+                required
+              />
             </div>
           </div>
-        </div>
-      )}
-    </div>
+
+          {/* Duration */}
+          <div className="flex gap-4 items-end">
+            <div className="flex-1">
+              <label className="block text-sm font-medium">Duración</label>
+              <select
+                value={duration}
+                onChange={(e) => setDuration(e.target.value)}
+                className="border rounded px-2 py-1 w-full"
+              >
+                <option value="15">15 min</option>
+                <option value="30">30 min</option>
+                <option value="45">45 min</option>
+                <option value="60">1 hora</option>
+                <option value="custom">Personalizado...</option>
+              </select>
+            </div>
+
+            {duration === "custom" && (
+              <div className="flex-1">
+                <input
+                  type="number"
+                  placeholder="Minutos"
+                  value={customDuration}
+                  onChange={(e) => setCustomDuration(e.target.value)}
+                  className="border rounded px-2 py-1 w-full"
+                  required
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Pacient */}
+          <label>
+            <span className="block text-sm font-medium">Paciente</span>
+            <select
+              value={patientId}
+              onChange={(e) => handlePatientChange(Number(e.target.value))}
+              className="border rounded px-2 py-1 w-full"
+            >
+              <option value={0} disabled>
+                Seleccione un paciente
+              </option>
+              {patients.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name} {p.lastname}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          {/* Description */}
+          <label>
+            <span className="block text-sm font-medium">Descripción</span>
+            <textarea
+              placeholder="Notas adicionales sobre el turno"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="border rounded px-2 py-1 w-full"
+              rows={3}
+            />
+          </label>
+
+          <button
+            type="submit"
+            disabled={submitting}
+            className="bg-blue-600 text-white px-4 py-2 mt-2 rounded hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {submitting ? "Creando..." : "Asignar Turno"}
+          </button>
+        </form>
+
+        {/* Advert Modal */}
+        {showNoPatientsModal && (
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+            onClick={() => {
+              setShowNoPatientsModal(false);
+              router.push("/appointments");
+            }}
+          >
+            <div
+              className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-200"
+              onClick={(e) => e.stopPropagation()} // Evita que el click en el modal cierre el modal
+            >
+              <div className="flex flex-col items-center text-center">
+                <div className="bg-amber-100 p-3 rounded-full mb-4">
+                  <svg
+                    className="w-8 h-8 text-amber-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">No tienes pacientes</h3>
+                <p className="text-gray-600 mb-6">
+                  Para crear un turno, primero debes dar de alta al menos un paciente en el sistema.
+                </p>
+                <button
+                  onClick={handleNoPatients}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition active:scale-95 shadow-lg shadow-blue-200"
+                >
+                  Crear mi primer paciente
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </Suspense>
   );
 }
