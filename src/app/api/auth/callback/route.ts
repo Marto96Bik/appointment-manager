@@ -56,13 +56,13 @@ export const GET = routeErrorHandler(async (req: NextRequest) => {
     .setExpirationTime("7d")
     .sign(secret);
 
-  const response = NextResponse.redirect("http://localhost:3000/");
+  const response = NextResponse.redirect("https://appointment-manager-silk.vercel.app/");
 
   response.cookies.set("jwt", accessToken, {
-    httpOnly: true,
+    /*httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    path: "/",
+    path: "/",*/
     maxAge: 60 * 60 * 24 * 7, // 7 días
   });
 
