@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SignJWT } from "jose";
 import { createUser, findUserByGoogleId } from "../../user/user.service";
-import { oauth2Client } from "../auth.client";
+import { createOAuthClient } from "@/integrations/google-auth.client";
 import prisma from "@/lib/database/prisma";
 import { routeErrorHandler } from "@/lib/errors/routeErrorHandler";
 
@@ -14,6 +14,7 @@ export const GET = routeErrorHandler(async (req: NextRequest) => {
   if (!code) return NextResponse.json({ error: "No code provided" }, { status: 400 });
 
   // Tokens
+  const oauth2Client = createOAuthClient();
   const { tokens } = await oauth2Client.getToken(code);
   oauth2Client.setCredentials(tokens);
 
@@ -56,7 +57,8 @@ export const GET = routeErrorHandler(async (req: NextRequest) => {
     .setExpirationTime("7d")
     .sign(secret);
 
-  const response = NextResponse.redirect("https://appointment-manager-silk.vercel.app/");
+  const baseUrl = process.env.APP_URL!;
+  const response = NextResponse.redirect(`${baseUrl}/`);
 
   response.cookies.set("jwt", accessToken, {
     /*httpOnly: true,

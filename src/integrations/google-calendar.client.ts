@@ -1,20 +1,12 @@
 import { AppError } from "../lib/errors/appCustomError";
 import { calendar_v3, google } from "googleapis";
+import { createOAuthClientWithToken } from "./google-auth.client";
 
 export class GoogleCalendarClient {
   private calendar;
 
   constructor(refreshToken: string) {
-    const oauth2Client = new google.auth.OAuth2(
-      process.env.GOOGLE_CLIENT_ID,
-      process.env.GOOGLE_CLIENT_SECRET,
-      process.env.GOOGLE_REDIRECT_URI,
-    );
-
-    oauth2Client.setCredentials({
-      refresh_token: refreshToken,
-    });
-
+    const oauth2Client = createOAuthClientWithToken(refreshToken);
     this.calendar = new calendar_v3.Calendar({ auth: oauth2Client });
   }
 
