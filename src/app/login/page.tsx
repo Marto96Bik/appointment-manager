@@ -20,7 +20,7 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setTimeout(() => {
-      router.push("/api/auth/login");
+      window.location.href = "/api/auth/login";
     }, 600);
   }
 
