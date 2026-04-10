@@ -54,6 +54,5 @@ function redirectToLogin(req: NextRequest) {
 
 // Middleware Node runtime
 export const config = {
-  matcher: ["/appointments/:path*", "/account/:path*", "/patients/:path*"],
-  runtime: "nodejs",
+  matcher: ["/appointments/:path*", "/account/:path*", "/patients/:path*"]
 };
