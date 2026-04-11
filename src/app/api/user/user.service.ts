@@ -29,13 +29,9 @@ export async function findUserByUserId(userId: number) {
 
 export async function findUserByGoogleId(googleId: string) {
   try {
-    const user = await prisma.user.findUnique({
+    return await prisma.user.findUnique({
       where: { googleId },
     });
-    if (!user) {
-      throw new AppError("User not found", 404);
-    }
-    return user;
   } catch (error: any) {
     handlePrismaError(error);
   }
