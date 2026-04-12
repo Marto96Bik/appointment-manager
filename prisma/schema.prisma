@@ -17,7 +17,7 @@ model User {
   name         String
   lastname     String
   email        String    @unique
-  phone        String?   @unique
+  phone        String?
   googleId     String    @unique
   sid          String?
   refreshToken String?

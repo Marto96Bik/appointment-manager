@@ -36,7 +36,7 @@ export const GET = routeErrorHandler(async (req: NextRequest) => {
       name: userData.given_name!,
       lastname: userData.family_name!,
       email: userData.email!,
-      phone: "",
+      phone: null,
       googleId: userData.sub,
       sid,
       refreshToken: tokens.refresh_token!,
