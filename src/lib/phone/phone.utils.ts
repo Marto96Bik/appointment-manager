@@ -1,6 +1,13 @@
 import { KNOWN_PREFIXES } from "./phone.config";
 
 export function splitPhone(fullPhone: string) {
+  if (!fullPhone) {
+    return {
+      prefix: "",
+      localNumber: "",
+      isCustom: false,
+    };
+  }
   for (const prefix of KNOWN_PREFIXES) {
     if (fullPhone.startsWith(prefix)) {
       return {
