@@ -134,8 +134,10 @@ export default function EditAccountPage() {
   };
 
   return (
-    <div className="max-w-xl mx-auto mt-10 p-8 bg-white shadow-xl rounded-2xl border border-gray-100">
-      <h1 className="text-3xl font-extrabold mb-8 text-gray-800 tracking-tight">Editar Cuenta</h1>
+    <div className="max-w-xl mx-auto mt-10 px-18 pt-8 pb-12 bg-white shadow-xl rounded-2xl border border-gray-100">
+      <h1 className="text-2xl text-center font-extrabold mb-3 text-gray-800 tracking-tight">
+        Editar Datos de Cuenta
+      </h1>
 
       {error && (
         <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6 text-sm font-medium border border-red-100">
@@ -143,7 +145,7 @@ export default function EditAccountPage() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-2">
         {/* Name */}
         <div>
           <label className="text-gray-600 text-sm font-semibold ml-1">Nombre</label>
@@ -180,7 +182,7 @@ export default function EditAccountPage() {
         {/* Phone */}
         <div className="w-full">
           <label className="text-gray-600 text-sm font-semibold ml-1">Número de teléfono</label>
-          <div className="relative mt-2 text-gray-500">
+          <div className="relative text-gray-500">
             <div className="absolute inset-y-0 left-3 my-auto h-6 flex items-center border-r border-gray-200 pr-2">
               {!isCustomPrefix ? (
                 <select
@@ -227,7 +229,7 @@ export default function EditAccountPage() {
         <button
           type="submit"
           disabled={loading}
-          className="mt-4 w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="mt-5 w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
             <span className="flex items-center justify-center gap-2">
