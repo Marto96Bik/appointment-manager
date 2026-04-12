@@ -61,7 +61,7 @@ export default function AccountPage() {
   if (!user) return null;
 
   return (
-    <div className="bg-white shadow-sm border border-slate-200 rounded-xl p-6 max-w-md mx-auto">
+    <div className="bg-white shadow-sm border border-slate-200 rounded-xl p-8 mt-10 max-w-md mx-auto">
       <h2 className="text-2xl text-center font-semibold text-slate-800 mb-5">Mi Cuenta</h2>
 
       {error && (

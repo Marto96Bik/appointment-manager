@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Loader from "./loader";
+import ErrorModal from "./modals/errorModal";
 
 export default function Sidebar() {
   const [open, setOpen] = useState(false);
@@ -10,12 +12,33 @@ export default function Sidebar() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (loading) {
-    return <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">Cargando...</div>;
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  async function handleLogout() {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (response.ok) {
+        setOpen(false);
+        router.refresh();
+        router.push("/login");
+      }
+    } catch (error) {
+      setErrorMessage("Error al cerrar sesión.");
+      setShowErrorModal(true);
+    } finally {
+      setLoading(false);
+    }
   }
 
-  if (error) {
-    return <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">Error: {error}</div>;
+  if (loading) {
+    return <Loader />;
   }
 
   return (
@@ -70,21 +93,7 @@ export default function Sidebar() {
         <div className="p-6 mt-auto">
           <button
             className="w-full text-left px-4 py-2 rounded hover:bg-red-100 text-red-600"
-            onClick={async () => {
-              try {
-                const response = await fetch("/api/auth/logout", {
-                  method: "POST",
-                });
-
-                if (response.ok) {
-                  setOpen(false);
-                  router.refresh();
-                  router.push("/login");
-                }
-              } catch (error) {
-                setError("Error al cerrar sesión. Intenta de nuevo.");
-              }
-            }}
+            onClick={handleLogout}
           >
             Logout
           </button>
@@ -97,6 +106,14 @@ export default function Sidebar() {
           onClick={() => setOpen(false)}
         />
       )}
+
+      {/* Error Modal */}
+      <ErrorModal
+        isOpen={showErrorModal}
+        title="Error en el formulario"
+        message={errorMessage}
+        onClose={() => setShowErrorModal(false)}
+      />
     </>
   );
 }

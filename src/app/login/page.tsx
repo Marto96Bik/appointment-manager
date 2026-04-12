@@ -3,24 +3,23 @@
 import React from "react";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { CalendarIcon, MailIcon, LockIcon, EyeIcon, EyeOffIcon } from "lucide-react";
-import Link from "next/link";
+import { CalendarDays } from "lucide-react";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const msgWelcome = "Bienvenido!";
-  const msgDescription = "Administrador de turnos de pacientes";
-  const msgSingIn = "Iniciá sesión con Google";
-  const msgNoAccount = "¿No tenés cuenta?";
-  const msgCreateAccount = "Crear cuenta";
+  const msgWelcome = "Appointment Manager";
+  const msgDescription =
+    "Administra los turnos de tus pacientes de manera rápida, sencilla y eficiente.";
+  const msgLogin = "System Login";
+  const msgContinue = "Acceso rápido y seguro con cuenta de Google";
+  const msgSingIn = "Ingresar o Registrarse";
+  const msgSecurity = "Security is provided by Google.";
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setTimeout(() => {
-      router.push("/api/auth/login");
+      window.location.href = "/api/auth/login";
     }, 600);
   }
 
@@ -54,7 +53,7 @@ export default function LoginPage() {
         {/* Header */}
         <div
           style={{
-            padding: "48px 32px 32px",
+            padding: "48px 56px 16px",
             textAlign: "center",
             display: "flex",
             flexDirection: "column",
@@ -72,9 +71,10 @@ export default function LoginPage() {
               justifyContent: "center",
               marginBottom: "24px",
               color: "white",
+              filter: "drop-shadow(0px 6px 4px rgba(114, 21, 206, 0.3))",
             }}
           >
-            <CalendarIcon style={{ width: "28px", height: "28px" }} />
+            <CalendarDays style={{ width: "28px", height: "28px" }} />
           </div>
           <h1
             style={{ fontSize: "24px", fontWeight: "bold", color: "#0f172a", margin: "0 0 10px" }}
@@ -84,17 +84,42 @@ export default function LoginPage() {
           <p style={{ fontSize: "14px", color: "#64748b", margin: 0 }}>{msgDescription}</p>
         </div>
 
-        {/* Google Button */}
-        <div style={{ padding: "0px 50px 0px" }}>
+        {/* Sing In */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            padding: "30px 20px",
+            width: "90%",
+            maxWidth: "450px" /* Limita el ancho total del recuadro */,
+            backgroundColor: "#f8fafc" /* Color de fondo suave (Slate 50) */,
+            borderRadius: "24px" /* Bordes muy suaves/redondeados */,
+            border: "1px solid #f1f5f9" /* Borde sutil para definir el límite */,
+            boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" /* Sombra ligera */,
+            boxSizing: "border-box",
+            margin: "20px auto",
+          }}
+        >
+          {/* Títulos */}
+          <p
+            style={{ margin: "0 0 0px 0", fontSize: "16px", color: "#323f51", fontWeight: "bold" }}
+          >
+            {msgLogin}
+          </p>
+          <p style={{ margin: "0 0 12px 0", fontSize: "14px", color: "#64748b" }}>{msgContinue}</p>
+
+          {/* Google Button - Ahora con width: '100%' */}
           <button
             onClick={handleSubmit}
             disabled={loading}
             style={{
-              width: "100%",
+              width: "100%" /* ESTO HACE QUE SE EXPANDA AL DIV PADRE */,
+              maxWidth: "400px" /* Opcional: para que no se vea gigante en pantallas de PC */,
               height: "56px",
               border: "1px solid #e2e8f0",
               borderRadius: "12px",
-              backgroundColor: "#white",
+              backgroundColor: "white",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -121,27 +146,35 @@ export default function LoginPage() {
                 fill="#EA4335"
               />
             </svg>
-            <span style={{ fontWeight: "600", color: "#334155" }}>
-              {loading ? "Signing in..." : msgSingIn}
+            <span style={{ fontWeight: 600, color: "#334155" }}>
+              {loading ? "Ingresando..." : msgSingIn}
             </span>
           </button>
+
+          {/* Subtítulo Inferior */}
+          <p style={{ margin: "12px 0 0 0", fontSize: "12px", color: "#94a3b8" }}>{msgSecurity}</p>
         </div>
 
+        {/* Terms of Service */}
         <div
           style={{
-            marginTop: "auto",
-            borderTop: "1px solid #f1f5f9",
-            padding: "25px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            padding: "10px",
+            width: "100%",
+            maxWidth: "450px",
             backgroundColor: "#f8fafc",
-            textAlign: "center",
+            border: "1px solid #f1f5f9",
+            boxSizing: "border-box",
+            margin: "30px auto",
           }}
         >
-          <p style={{ fontSize: "14px", color: "#64748b", margin: "0px 0px 15px" }}>
-            {msgNoAccount}
-            {"  "}
-            <button style={{ color: "#135bec", fontWeight: "bold" }} onClick={handleSubmit}>
-              {msgCreateAccount}
-            </button>
+          <p style={{ margin: "0px 0 0 0", fontSize: "12px", color: "#94a3b8" }}>
+            Privacy Policy | Terms of Service
+          </p>
+          <p style={{ margin: "12px 0 0 0", fontSize: "12px", color: "#94a3b8" }}>
+            2026 Appointment Manager.
           </p>
         </div>
       </div>

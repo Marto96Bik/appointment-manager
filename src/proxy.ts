@@ -6,7 +6,7 @@ import { findUserByGoogleId } from "./app/api/user/user.service";
 const secret = new TextEncoder().encode(process.env.SESSION_SECRET!);
 const protectedRoutes = ["/appointments", "/account", "/patients"];
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const jwtCookie = req.cookies.get("jwt")?.value;
 
   // If it's a protected route and no JWT → redirect to login
@@ -54,6 +54,5 @@ function redirectToLogin(req: NextRequest) {
 
 // Middleware Node runtime
 export const config = {
-  matcher: ["/appointments/:path*", "/account/:path*", "/patients/:path*"],
-  runtime: "nodejs",
+  matcher: ["/appointments/:path*", "/account/:path*", "/patients/:path*"]
 };

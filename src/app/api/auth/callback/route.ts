@@ -26,6 +26,8 @@ export const GET = routeErrorHandler(async (req: NextRequest) => {
   const userData = ticket.getPayload()!;
 
   // Check user
+  const baseUrl = process.env.APP_URL!;
+  let redirectUrl = `${baseUrl}/`;
   let user = await findUserByGoogleId(userData.sub);
   const sid = crypto.randomUUID();
 
@@ -34,11 +36,12 @@ export const GET = routeErrorHandler(async (req: NextRequest) => {
       name: userData.given_name!,
       lastname: userData.family_name!,
       email: userData.email!,
-      phone: "",
+      phone: null,
       googleId: userData.sub,
       sid,
       refreshToken: tokens.refresh_token!,
     });
+    redirectUrl = `${baseUrl}/register`;
   } else {
     user = await prisma.user.update({
       where: { id: user.id },
@@ -57,8 +60,7 @@ export const GET = routeErrorHandler(async (req: NextRequest) => {
     .setExpirationTime("7d")
     .sign(secret);
 
-  const baseUrl = process.env.APP_URL!;
-  const response = NextResponse.redirect(`${baseUrl}/`);
+  const response = NextResponse.redirect(redirectUrl);
 
   response.cookies.set("jwt", accessToken, {
     /*httpOnly: true,
