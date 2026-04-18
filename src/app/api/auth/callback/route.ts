@@ -11,7 +11,9 @@ export const GET = routeErrorHandler(async (req: NextRequest) => {
   const { searchParams } = new URL(req.url);
   const code = searchParams.get("code");
 
-  if (!code) return NextResponse.json({ error: "No code provided" }, { status: 400 });
+  if (!code) {
+    return NextResponse.json({ error: "No code provided" }, { status: 400 });
+  }
 
   // Tokens
   const oauth2Client = createOAuthClient();
