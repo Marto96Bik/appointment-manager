@@ -1,6 +1,6 @@
 "use client";
 
-import "./globals.css";
+import "@/app/globals.css";
 import { Roboto } from "next/font/google";
 import Sidebar from "./components/sidebar";
 import Header from "./components/header";
